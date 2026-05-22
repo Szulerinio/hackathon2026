@@ -27,18 +27,22 @@ function revalidate(slug: string, dealId?: number) {
   }
 }
 
-async function extractAlertsFromActivity(input: {
-  contactName: string;
-  contactSlug: string;
-  type: string;
-  date: string;
-  notes: string;
-}): Promise<AlertExtractionMeta> {
+async function extractAlertsFromActivity(
+  input: {
+    contactName: string;
+    contactSlug: string;
+    type: string;
+    date: string;
+    notes: string;
+  },
+  mode: "create" | "edit" = "create",
+): Promise<AlertExtractionMeta> {
   const text = formatActivityForAlertExtraction({
     contactName: input.contactName,
     type: input.type,
     date: input.date,
     notes: input.notes || null,
+    mode,
   });
 
   const ai = await extractAlertsFromTextAction(
@@ -152,12 +156,24 @@ export async function updateActivityAction(
   await syncContactInteraction(contact.id);
   if (oldDealId && oldDealId !== dealId) await syncDealLastActivity(oldDealId);
   if (dealId) await syncDealLastActivity(dealId);
+
+  const alertMeta = await extractAlertsFromActivity(
+    {
+      contactName: contact.name,
+      contactSlug: slug,
+      type,
+      date,
+      notes,
+    },
+    "edit",
+  );
+
   revalidate(slug, dealId);
   if (oldDealId && oldDealId !== dealId) {
     revalidatePath(`/deals/${oldDealId}`);
     revalidatePath("/deals");
   }
-  return { ok: true };
+  return { ok: true, ...alertMeta };
 }
 
 export async function deleteActivityAction(

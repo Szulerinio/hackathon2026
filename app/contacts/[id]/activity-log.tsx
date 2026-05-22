@@ -378,7 +378,7 @@ function ActivityModal({
             >
               {pending
                 ? activity
-                  ? 'Saving…'
+                  ? 'Saving & analyzing…'
                   : 'Logging & analyzing…'
                 : activity
                   ? 'Save'
@@ -395,10 +395,12 @@ function ActivityRow({
   activity,
   slug,
   deals,
+  onLogged,
 }: {
   activity: ActivityEvent
   slug: string
   deals: DealRow[]
+  onLogged?: (result: ActivityActionResult) => void
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
@@ -419,6 +421,7 @@ function ActivityRow({
           activity={activity}
           deals={deals}
           onClose={() => setEditing(false)}
+          onLogged={onLogged}
         />
       )}
       <div
@@ -628,7 +631,20 @@ export default function ActivityLog({
         </div>
 
         {activities.map((a) => (
-          <ActivityRow key={a.id} activity={a} slug={slug} deals={deals} />
+          <ActivityRow
+            key={a.id}
+            activity={a}
+            slug={slug}
+            deals={deals}
+            onLogged={(result) => {
+              if (!result.ok) return
+              if (result.alertsCreated && result.alertsCreated > 0) {
+                setAlertBanner(result.alertSummary ?? `Created ${result.alertsCreated} alert(s).`)
+              } else if (result.alertError) {
+                setAlertBanner(`Activity saved. Alerts: ${result.alertError}`)
+              }
+            }}
+          />
         ))}
 
         {activities.length === 0 && (
