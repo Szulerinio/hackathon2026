@@ -14,7 +14,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 // Bump when schema changes so dev hot-reload picks up a new client (avoids stale DMMF).
-const PRISMA_SCHEMA_VERSION = "20260522111804";
+const PRISMA_SCHEMA_VERSION = "20260522141341";
 
 function getPrisma(): PrismaClient {
   if (
