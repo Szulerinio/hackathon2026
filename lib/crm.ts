@@ -28,6 +28,8 @@ export type Contact = {
   decayTier: DecayTier;
   isHousehold: boolean;
   type: ParticipantRole | null;
+  phone: string;
+  email: string;
 };
 
 export type ListingCard = {
@@ -148,6 +150,8 @@ function mapContact(row: DbContact): Contact {
     decayTier: decay.tier,
     isHousehold: row.isHousehold,
     type: parseParticipantRole(row.participantRole),
+    phone: row.phone ?? "",
+    email: row.email ?? "",
   };
 }
 

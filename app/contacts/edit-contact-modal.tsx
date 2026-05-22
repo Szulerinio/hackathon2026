@@ -1,32 +1,41 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useActionState, useEffect, useRef, useState } from 'react'
-import { createContactAction, type CreateContactResult } from './actions'
-import ContactFormFields from './contact-form-fields'
-import { formatDate, getCrmToday } from '../../lib/decay'
+import { useActionState, useEffect, useState } from 'react'
+import type { Contact } from '../../lib/crm'
+import { updateContactAction, type UpdateContactResult } from './actions'
+import ContactFormFields, { type ContactFormValues } from './contact-form-fields'
 
-const initialState: CreateContactResult | null = null
+const initialState: UpdateContactResult | null = null
 
-function todayInputValue(): string {
-  return formatDate(getCrmToday())
+function toFormValues(contact: Contact): ContactFormValues {
+  return {
+    name: contact.name,
+    relationship: contact.relationship,
+    source: contact.source,
+    tags: contact.tags.join(', '),
+    participantRole: contact.type ?? '',
+    phone: contact.phone,
+    email: contact.email,
+    context: contact.context,
+    notes: contact.notes,
+    lastInteractionDate: contact.lastInteractionDate,
+    lastInteractionSummary: contact.lastInteractionSummary,
+  }
 }
 
-export default function AddContactModal() {
+export default function EditContactModal({ contact }: { contact: Contact }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
   const [state, formAction, pending] = useActionState(
-    async (_prev: CreateContactResult | null, formData: FormData) =>
-      createContactAction(formData),
+    async (_prev: UpdateContactResult | null, formData: FormData) =>
+      updateContactAction(formData),
     initialState,
   )
 
   useEffect(() => {
     if (state?.ok) {
       setOpen(false)
-      formRef.current?.reset()
-      router.push(`/contacts/${state.slug}`)
       router.refresh()
     }
   }, [state, router])
@@ -40,14 +49,16 @@ export default function AddContactModal() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
+  const formValues = toFormValues(contact)
+
   return (
     <>
       <button
         type="button"
-        className="btn-primary"
+        className="btn-ghost"
         onClick={() => setOpen(true)}
       >
-        Add contact
+        Edit
       </button>
 
       {open && (
@@ -59,13 +70,13 @@ export default function AddContactModal() {
           <div
             className="modal-panel"
             role="dialog"
-            aria-labelledby="add-contact-title"
+            aria-labelledby="edit-contact-title"
             aria-modal="true"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <h2 id="add-contact-title" className="modal-title">
-                Add contact
+              <h2 id="edit-contact-title" className="modal-title">
+                Edit contact
               </h2>
               <button
                 type="button"
@@ -77,10 +88,11 @@ export default function AddContactModal() {
               </button>
             </div>
 
-            <form ref={formRef} action={formAction} className="modal-form">
+            <form action={formAction} className="modal-form" key={contact.id}>
+              <input type="hidden" name="slug" value={contact.id} />
               <ContactFormFields
-                idPrefix="add-contact"
-                values={{ lastInteractionDate: todayInputValue() }}
+                idPrefix="edit-contact"
+                values={formValues}
                 autoFocusName
               />
 
@@ -104,7 +116,7 @@ export default function AddContactModal() {
                   className="btn-primary"
                   disabled={pending}
                 >
-                  {pending ? 'Saving…' : 'Save contact'}
+                  {pending ? 'Saving…' : 'Save changes'}
                 </button>
               </div>
             </form>

@@ -76,3 +76,45 @@ export async function createContact(
 
   return { slug: row.slug };
 }
+
+export type UpdateContactInput = CreateContactInput & {
+  slug: string;
+};
+
+export async function updateContact(
+  input: UpdateContactInput,
+): Promise<{ slug: string }> {
+  const name = input.name.trim();
+  const relationship = emptyToNull(input.relationship);
+  const tags = input.tags.map((t) => t.trim().toLowerCase()).filter(Boolean);
+
+  const lastInteractionDate =
+    emptyToNull(input.lastInteractionDate) ??
+    formatDate(getCrmToday());
+
+  const row = await prisma.contact.update({
+    where: { slug: input.slug },
+    data: {
+      name,
+      relationship,
+      source: emptyToNull(input.source),
+      context: emptyToNull(input.context),
+      notes: emptyToNull(input.notes),
+      phone: emptyToNull(input.phone),
+      email: emptyToNull(input.email),
+      tags: JSON.stringify(tags),
+      contactType: deriveContactType(tags),
+      participantRole: input.participantRole ?? null,
+      decayThresholdDays: deriveDecayThresholdDays(tags),
+      isHousehold: deriveIsHousehold(
+        name,
+        relationship ?? "",
+        tags,
+      ),
+      lastInteractionDate,
+      lastInteractionSummary: emptyToNull(input.lastInteractionSummary),
+    },
+  });
+
+  return { slug: row.slug };
+}

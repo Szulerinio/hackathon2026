@@ -1,13 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createContact } from "../../lib/contacts-mutations";
+import {
+  createContact,
+  updateContact,
+  type CreateContactInput,
+} from "../../lib/contacts-mutations";
 import { parseTags } from "../../lib/derive-contact";
 import { formatDate, getCrmToday } from "../../lib/decay";
 
 export type CreateContactResult =
   | { ok: true; slug: string }
   | { ok: false; error: string };
+
+export type UpdateContactResult = CreateContactResult;
 
 function parseParticipantRole(
   raw: string,
@@ -16,9 +22,9 @@ function parseParticipantRole(
   return null;
 }
 
-export async function createContactAction(
+function parseContactInput(
   formData: FormData,
-): Promise<CreateContactResult> {
+): { ok: true; input: CreateContactInput } | { ok: false; error: string } {
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 2) {
     return { ok: false, error: "Name is required (at least 2 characters)." };
@@ -36,8 +42,9 @@ export async function createContactAction(
     formData.get("lastInteractionDate") ?? "",
   ).trim();
 
-  try {
-    const { slug } = await createContact({
+  return {
+    ok: true,
+    input: {
       name,
       relationship: String(formData.get("relationship") ?? ""),
       source: String(formData.get("source") ?? ""),
@@ -54,15 +61,52 @@ export async function createContactAction(
       lastInteractionSummary: String(
         formData.get("lastInteractionSummary") ?? "",
       ),
-    });
+    },
+  };
+}
 
-    revalidatePath("/contacts");
-    revalidatePath("/");
-    revalidatePath(`/contacts/${slug}`);
+function revalidateContactPaths(slug: string) {
+  revalidatePath("/contacts");
+  revalidatePath("/");
+  revalidatePath(`/contacts/${slug}`);
+}
 
+export async function createContactAction(
+  formData: FormData,
+): Promise<CreateContactResult> {
+  const parsed = parseContactInput(formData);
+  if (!parsed.ok) return parsed;
+
+  try {
+    const { slug } = await createContact(parsed.input);
+    revalidateContactPaths(slug);
     return { ok: true, slug };
   } catch (err) {
     console.error("createContact failed:", err);
     return { ok: false, error: "Could not save contact. Try again." };
+  }
+}
+
+export async function updateContactAction(
+  formData: FormData,
+): Promise<UpdateContactResult> {
+  const slug = String(formData.get("slug") ?? "").trim();
+  if (!slug) {
+    return { ok: false, error: "Missing contact." };
+  }
+
+  const parsed = parseContactInput(formData);
+  if (!parsed.ok) return parsed;
+
+  try {
+    const { slug: savedSlug } = await updateContact({
+      slug,
+      ...parsed.input,
+    });
+    revalidateContactPaths(savedSlug);
+    return { ok: true, slug: savedSlug };
+  } catch (err) {
+    console.error("updateContact failed:", err);
+    return { ok: false, error: "Could not update contact. Try again." };
   }
 }

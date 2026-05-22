@@ -6,6 +6,7 @@ import {
   getDealsForContact,
   getListingsForContact,
 } from '../../../lib/crm'
+import EditContactModal from '../edit-contact-modal'
 
 function DecayPill({ tier, days }: { tier: string; days: number }) {
   const cls = tier === 'urgent' ? 's-red' : tier === 'warning' ? 's-amber' : tier === 'watch' ? 's-blue' : 's-green'
@@ -51,10 +52,11 @@ export default async function ContactDetailPage({
 
   return (
     <>
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <Link href="/contacts" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>
           ← Contacts
         </Link>
+        <EditContactModal contact={contact} />
       </div>
 
       {contact.lastInteractionSummary && (
