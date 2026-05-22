@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { avatarClass } from '../../../lib/avatar'
 import {
   getContact,
+  getDeals,
   getDealsForContact,
   getListingsForContact,
   getActivitiesForContact,
@@ -45,10 +46,11 @@ export default async function ContactDetailPage({
   if (!contact) notFound()
 
   const avClass = avatarClass(contact.id)
-  const [linkedListings, linkedDeals, activities] = await Promise.all([
+  const [linkedListings, linkedDeals, activities, allDeals] = await Promise.all([
     getListingsForContact(contact.id),
     getDealsForContact(contact.id),
     getActivitiesForContact(contact.id),
+    getDeals(),
   ])
 
   const isSeller = contact.type === 'seller' || contact.type === 'both'
@@ -177,7 +179,7 @@ export default async function ContactDetailPage({
         </div>
       </div>
 
-      <ActivityLog activities={activities} slug={contact.id} />
+      <ActivityLog activities={activities} slug={contact.id} deals={allDeals} />
     </>
   )
 }

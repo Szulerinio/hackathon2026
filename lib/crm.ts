@@ -31,6 +31,18 @@ export type ActivityEvent = {
   date: string;
   notes: string;
   createdAt: string;
+  dealId?: number;
+  dealPropertyAddress?: string;
+};
+
+export type DealActivityEvent = {
+  id: number;
+  type: string;
+  date: string;
+  notes: string;
+  createdAt: string;
+  contactName: string;
+  contactSlug: string;
 };
 
 export type Contact = {
@@ -242,6 +254,7 @@ export const getActivitiesForContact = cache(
     if (!contact) return [];
     const rows = await prisma.activityEvent.findMany({
       where: { contactId: contact.id },
+      include: { deal: { include: { listing: true } } },
       orderBy: { date: "desc" },
     });
     return rows.map((r) => ({
@@ -250,6 +263,10 @@ export const getActivitiesForContact = cache(
       date: formatDate(r.date),
       notes: r.notes ?? "",
       createdAt: formatDate(r.createdAt),
+      dealId: r.dealId ?? undefined,
+      dealPropertyAddress: r.deal
+        ? (r.deal.listing.address ?? r.deal.listing.title)
+        : undefined,
     }));
   },
 );
@@ -307,6 +324,43 @@ export const getDealsForContact = cache(
   async (contactSlug: string): Promise<DealRow[]> => {
     const deals = await getDeals();
     return deals.filter((d) => d.buyerSlug === contactSlug);
+  },
+);
+
+export const getDeal = cache(async (id: number): Promise<DealRow | null> => {
+  const row = await prisma.deal.findUnique({
+    where: { id },
+    include: { listing: true, buyer: true },
+  });
+  if (!row) return null;
+  return {
+    id: row.id,
+    listingId: row.listingId,
+    buyerName: row.buyer?.name ?? "—",
+    buyerSlug: row.buyer?.slug ?? "",
+    propertyAddress: row.listing.address ?? row.listing.title,
+    status: row.status,
+    value: row.valueDisplay ?? "",
+    lastActivityDate: formatDate(row.lastActivityDate),
+  };
+});
+
+export const getActivitiesForDeal = cache(
+  async (dealId: number): Promise<DealActivityEvent[]> => {
+    const rows = await prisma.activityEvent.findMany({
+      where: { dealId },
+      include: { contact: true },
+      orderBy: { date: "desc" },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      type: r.type,
+      date: formatDate(r.date),
+      notes: r.notes ?? "",
+      createdAt: formatDate(r.createdAt),
+      contactName: r.contact.name,
+      contactSlug: r.contact.slug,
+    }));
   },
 );
 

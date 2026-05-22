@@ -102,7 +102,12 @@ export default async function DealsPage({
             >
               {d.buyerName}
             </Link>
-            <div style={{ fontSize: 12, color: 'var(--text2)' }}>{d.propertyAddress}</div>
+            <Link
+              href={`/deals/${d.id}`}
+              style={{ fontSize: 12, color: 'var(--text2)', textDecoration: 'none' }}
+            >
+              {d.propertyAddress}
+            </Link>
             <span className={`s-pill ${statusPill(d.status)}`}>{d.status}</span>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-dim)' }}>{d.value}</div>
             <div style={{ fontSize: 11, color: 'var(--text3)' }}>{d.lastActivityDate}</div>

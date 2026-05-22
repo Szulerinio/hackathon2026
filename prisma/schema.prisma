@@ -86,6 +86,8 @@ model Deal {
   closedAt     DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  activities   ActivityEvent[]
 }
 
 model Alert {
@@ -105,6 +107,8 @@ model ActivityEvent {
   id        Int      @id @default(autoincrement())
   contactId Int
   contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  dealId    Int?
+  deal      Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
   type      String
   date      String
   notes     String?

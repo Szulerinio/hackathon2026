@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { ActivityEvent, DealRow } from '../../../lib/crm'
+import type { DealActivityEvent } from '../../../lib/crm'
 import {
-  createActivityAction,
-  updateActivityAction,
-  deleteActivityAction,
+  createDealActivityAction,
+  updateDealActivityAction,
+  deleteDealActivityAction,
   type ActivityActionResult,
 } from './activity-actions'
 import { formatDate, getCrmToday } from '../../../lib/decay'
@@ -26,85 +26,82 @@ function todayValue(): string {
   return formatDate(getCrmToday())
 }
 
+type ContactOption = { slug: string; name: string }
+
 const initialState: ActivityActionResult | null = null
 
-function DealCombobox({
-  deals,
-  contactSlug,
-  defaultDealId,
+function ContactCombobox({
+  contacts,
+  defaultSlug,
+  readonly,
+  readonlyName,
 }: {
-  deals: DealRow[]
-  contactSlug: string
-  defaultDealId?: number
+  contacts: ContactOption[]
+  defaultSlug?: string
+  readonly?: boolean
+  readonlyName?: string
 }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<DealRow | null>(
-    defaultDealId ? (deals.find((d) => d.id === defaultDealId) ?? null) : null,
+  const [selected, setSelected] = useState<ContactOption | null>(
+    defaultSlug ? (contacts.find((c) => c.slug === defaultSlug) ?? null) : null,
   )
 
-  const sorted = deals
-    .filter((d) =>
-      `${d.propertyAddress} ${d.buyerName}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-    )
-    .sort((a, b) => {
-      const aOwn = a.buyerSlug === contactSlug
-      const bOwn = b.buyerSlug === contactSlug
-      if (aOwn === bOwn) return 0
-      return aOwn ? -1 : 1
-    })
-
-  const displayValue = open
-    ? search
-    : selected
-      ? `${selected.propertyAddress} — ${selected.buyerName}`
-      : ''
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <input type="hidden" name="dealId" value={selected?.id ?? ''} />
-      <div style={{ display: 'flex', gap: 4 }}>
-        <input
-          type="text"
-          placeholder="Link to deal (optional)…"
-          value={displayValue}
-          onFocus={() => {
-            setOpen(true)
-            setSearch('')
-          }}
-          onChange={(e) => setSearch(e.target.value)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
+  if (readonly && readonlyName) {
+    return (
+      <>
+        <input type="hidden" name="contactSlug" value={defaultSlug ?? ''} />
+        <div
           style={{
-            flex: 1,
             padding: '6px 8px',
             fontSize: 12,
             background: 'var(--surface2)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--r-sm)',
-            color: 'var(--text)',
+            color: 'var(--text2)',
           }}
-        />
-        {selected && (
-          <button
-            type="button"
-            onClick={() => setSelected(null)}
-            style={{
-              padding: '4px 8px',
-              fontSize: 11,
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--r-sm)',
-              color: 'var(--text3)',
-              cursor: 'pointer',
-            }}
-          >
-            ✕
-          </button>
-        )}
-      </div>
-      {open && sorted.length > 0 && (
+        >
+          {readonlyName}
+        </div>
+      </>
+    )
+  }
+
+  const filtered = contacts.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase()),
+  )
+
+  const displayValue = open
+    ? search
+    : selected
+      ? selected.name
+      : ''
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input type="hidden" name="contactSlug" value={selected?.slug ?? ''} />
+      <input
+        type="text"
+        placeholder="Search contacts…"
+        value={displayValue}
+        onFocus={() => {
+          setOpen(true)
+          setSearch('')
+        }}
+        onChange={(e) => setSearch(e.target.value)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{
+          width: '100%',
+          padding: '6px 8px',
+          fontSize: 12,
+          background: 'var(--surface2)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r-sm)',
+          color: 'var(--text)',
+          boxSizing: 'border-box',
+        }}
+      />
+      {open && filtered.length > 0 && (
         <div
           style={{
             position: 'absolute',
@@ -120,11 +117,11 @@ function DealCombobox({
             marginTop: 2,
           }}
         >
-          {sorted.map((d) => (
+          {filtered.map((c) => (
             <div
-              key={d.id}
+              key={c.slug}
               onMouseDown={() => {
-                setSelected(d)
+                setSelected(c)
                 setOpen(false)
                 setSearch('')
               }}
@@ -133,26 +130,10 @@ function DealCombobox({
                 fontSize: 12,
                 cursor: 'pointer',
                 borderBottom: '1px solid var(--border)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
+                color: 'var(--text)',
               }}
             >
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                {d.propertyAddress}
-              </span>
-              <span style={{ color: 'var(--text3)' }}>— {d.buyerName}</span>
-              {d.buyerSlug === contactSlug && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    color: 'var(--accent-dim)',
-                    fontWeight: 700,
-                  }}
-                >
-                  ★
-                </span>
-              )}
+              {c.name}
             </div>
           ))}
         </div>
@@ -161,15 +142,15 @@ function DealCombobox({
   )
 }
 
-function ActivityModal({
-  slug,
+function DealActivityModal({
+  dealId,
   activity,
-  deals,
+  contacts,
   onClose,
 }: {
-  slug: string
-  activity?: ActivityEvent
-  deals: DealRow[]
+  dealId: number
+  activity?: DealActivityEvent
+  contacts: ContactOption[]
   onClose: () => void
 }) {
   const router = useRouter()
@@ -177,9 +158,9 @@ function ActivityModal({
 
   const action = activity
     ? (_prev: ActivityActionResult | null, fd: FormData) =>
-        updateActivityAction(slug, activity.id, fd)
+        updateDealActivityAction(dealId, activity.id, fd)
     : (_prev: ActivityActionResult | null, fd: FormData) =>
-        createActivityAction(slug, fd)
+        createDealActivityAction(dealId, fd)
 
   const [state, formAction, pending] = useActionState(action, initialState)
 
@@ -239,6 +220,26 @@ function ActivityModal({
           action={formAction}
           style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
         >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label
+              style={{
+                fontSize: 10,
+                color: 'var(--text3)',
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Contact *
+            </label>
+            <ContactCombobox
+              contacts={contacts}
+              defaultSlug={activity?.contactSlug}
+              readonly={!!activity}
+              readonlyName={activity?.contactName}
+            />
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <label
@@ -330,27 +331,6 @@ function ActivityModal({
             />
           </div>
 
-          {deals.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label
-                style={{
-                  fontSize: 10,
-                  color: 'var(--text3)',
-                  fontWeight: 600,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Deal
-              </label>
-              <DealCombobox
-                deals={deals}
-                contactSlug={slug}
-                defaultDealId={activity?.dealId}
-              />
-            </div>
-          )}
-
           {state && !state.ok && (
             <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }} role="alert">
               {state.error}
@@ -382,14 +362,12 @@ function ActivityModal({
   )
 }
 
-function ActivityRow({
+function DealActivityRow({
   activity,
-  slug,
-  deals,
+  dealId,
 }: {
-  activity: ActivityEvent
-  slug: string
-  deals: DealRow[]
+  activity: DealActivityEvent
+  dealId: number
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
@@ -398,17 +376,17 @@ function ActivityRow({
 
   async function handleDelete() {
     setDeleting(true)
-    await deleteActivityAction(slug, activity.id)
+    await deleteDealActivityAction(dealId, activity.id)
     router.refresh()
   }
 
   return (
     <>
       {editing && (
-        <ActivityModal
-          slug={slug}
+        <DealActivityModal
+          dealId={dealId}
           activity={activity}
-          deals={deals}
+          contacts={[]}
           onClose={() => setEditing(false)}
         />
       )}
@@ -427,7 +405,14 @@ function ActivityRow({
           {TYPE_ICONS[activity.type] ?? '📌'}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
+            }}
+          >
             <span
               style={{
                 fontSize: 12,
@@ -441,23 +426,17 @@ function ActivityRow({
             <span style={{ fontSize: 11, color: 'var(--text3)' }}>
               {activity.date}
             </span>
-            {activity.dealId && activity.dealPropertyAddress && (
-              <Link
-                href={`/deals/${activity.dealId}`}
-                style={{
-                  fontSize: 10,
-                  color: 'var(--accent-dim)',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                  background: 'rgba(200,241,53,0.08)',
-                  border: '1px solid rgba(200,241,53,0.2)',
-                  borderRadius: 4,
-                  padding: '1px 6px',
-                }}
-              >
-                🏠 {activity.dealPropertyAddress}
-              </Link>
-            )}
+            <Link
+              href={`/contacts/${activity.contactSlug}`}
+              style={{
+                fontSize: 11,
+                color: 'var(--text2)',
+                textDecoration: 'none',
+                fontWeight: 500,
+              }}
+            >
+              {activity.contactName}
+            </Link>
           </div>
           {activity.notes && (
             <div
@@ -524,23 +503,23 @@ function ActivityRow({
   )
 }
 
-export default function ActivityLog({
+export default function DealActivityLog({
+  dealId,
   activities,
-  slug,
-  deals = [],
+  contacts,
 }: {
-  activities: ActivityEvent[]
-  slug: string
-  deals?: DealRow[]
+  dealId: number
+  activities: DealActivityEvent[]
+  contacts: ContactOption[]
 }) {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
     <>
       {modalOpen && (
-        <ActivityModal
-          slug={slug}
-          deals={deals}
+        <DealActivityModal
+          dealId={dealId}
+          contacts={contacts}
           onClose={() => setModalOpen(false)}
         />
       )}
@@ -582,12 +561,12 @@ export default function ActivityLog({
         </div>
 
         {activities.map((a) => (
-          <ActivityRow key={a.id} activity={a} slug={slug} deals={deals} />
+          <DealActivityRow key={a.id} activity={a} dealId={dealId} />
         ))}
 
         {activities.length === 0 && (
           <div style={{ fontSize: 12, color: 'var(--text3)', paddingTop: 6 }}>
-            No activity logged yet. Record calls, emails, and meetings here.
+            No activity logged for this deal yet.
           </div>
         )}
       </div>
