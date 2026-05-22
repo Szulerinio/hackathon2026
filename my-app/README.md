@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RafalCRM
 
-## Getting Started
+Personal CRM for Rafał — built during AI Hackathon 2026 (MasterBorn, May 22).
 
-First, run the development server:
+## What it is
+
+A relationship management tool tailored to a real estate agent's network. It surfaces who needs attention, tracks open promises, and provides rich context before a call or meeting.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> The app reads from `../dataset-rafal.csv` (one level above `my-app/`). Keep that file in place while on CSV.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Routes
 
-## Learn More
+| Route | Description |
+|---|---|
+| `/` | Dashboard — metrics, contact list, AI alerts, deals, promises |
+| `/contacts/[id]` | Contact detail — 4 layout variants (toggle via `?layout=a/b/c/d`) |
+| `/chat` | AI feature placeholder |
 
-To learn more about Next.js, take a look at the following resources:
+## Data layer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Currently reads from `dataset-rafal.csv`. The data access layer is isolated in `lib/data.ts` — swap the internals there when SQLite is ready. The API routes (`/api/contacts`, `/api/contacts/[id]`) are the contract the rest of the app uses.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router)
+- Tailwind CSS v4
+- TypeScript
+- Data: CSV → SQLite (planned)
