@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../app/generated/prisma"
@@ -13,13 +8,79 @@ datasource db {
 }
 
 model Contact {
-  id                     Int     @id @default(autoincrement())
+  id                     Int       @id @default(autoincrement())
+  slug                   String    @unique
   name                   String
   relationship           String?
   source                 String?
   context                String?
   lastInteractionDate    String?
   lastInteractionSummary String?
-  tags                   String?
   notes                  String?
+  tags                   String    @default("[]")
+  contactType            String?
+  decayThresholdDays     Int       @default(180)
+  isHousehold            Boolean   @default(false)
+  phone                  String?
+  email                  String?
+  householdMembers       String?
+  city                   String?
+  referredById           Int?
+  referredBy             Contact?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals              Contact[] @relation("Referrals")
+  lifeEventDate          String?
+  lifeEventLabel         String?
+  sentiment              String?
+  lastChannel            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  ownedListings Listing[] @relation("ListingOwner")
+  buyerDeals    Deal[]    @relation("DealBuyer")
+  alerts        Alert[]
+}
+
+model Listing {
+  id           Int      @id @default(autoincrement())
+  title        String
+  subtitle     String?
+  address      String?
+  ownerId      Int
+  owner        Contact  @relation("ListingOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  valueDisplay String?
+  valuePln     Decimal?
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  deals Deal[]
+}
+
+model Deal {
+  id           Int       @id @default(autoincrement())
+  listingId    Int
+  listing      Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId      Int?
+  buyer        Contact?  @relation("DealBuyer", fields: [buyerId], references: [id], onDelete: SetNull)
+  status       String
+  title        String?
+  subtitle     String?
+  valueDisplay String?
+  valuePln     Decimal?
+  closedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Alert {
+  id              Int      @id @default(autoincrement())
+  contactId       Int
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  reason          String
+  suggestedAction String?
+  severity        String
+  daysSince       Int?
+  isActive        Boolean  @default(true)
+  generatedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
 }

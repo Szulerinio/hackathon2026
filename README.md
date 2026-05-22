@@ -27,11 +27,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Data layer
 
-Currently reads from `dataset-rafal.csv`. The data access layer is isolated in `lib/data.ts` — swap the internals there when SQLite is ready. The API routes (`/api/contacts`, `/api/contacts/[id]`) are the contract the rest of the app uses.
+Data lives in SQLite (`dev.db`) via Prisma: `contacts`, `listings` (property + owner), `deals` (listing + buyer, status open/closed/listing/…), `alerts`. Access through `lib/data.ts`; seed with `pnpm db:seed`.
 
 ## Stack
 
 - Next.js 16 (App Router)
 - Tailwind CSS v4
 - TypeScript
-- Data: CSV → SQLite (planned)
+- Data: SQLite (Prisma) — contacts, listings, deals, alerts
