@@ -37,9 +37,8 @@ export const CREATE_ALERT_INPUT_SCHEMA = {
     },
     daysSince: {
       type: ["integer", "null"],
-      minimum: 0,
       description:
-        "Days since the triggering event, or null if not inferable from text.",
+        "Non-negative integer: days since the triggering event, or null if not inferable from text.",
     },
   },
   required: [

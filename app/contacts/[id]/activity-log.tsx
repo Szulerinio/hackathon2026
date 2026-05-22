@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ActivityEvent, DealRow } from '../../../lib/crm'
+import AiAlertBanner from '../ai-alert-banner'
 import {
   createActivityAction,
   updateActivityAction,
@@ -11,6 +12,17 @@ import {
   type ActivityActionResult,
 } from './activity-actions'
 import { formatDate, getCrmToday } from '../../../lib/decay'
+
+function alertMessageFromActivity(result: ActivityActionResult): string | null {
+  if (!result.ok) return null
+  if (result.alertsCreated && result.alertsCreated > 0) {
+    return result.alertSummary ?? `Created ${result.alertsCreated} alert(s).`
+  }
+  if (result.alertError) {
+    return `Activity saved. Alerts: ${result.alertError}`
+  }
+  return null
+}
 
 const ACTIVITY_TYPES = ['call', 'email', 'meeting', 'note', 'other'] as const
 
@@ -540,13 +552,21 @@ export default function ActivityLog({
   activities,
   slug,
   deals = [],
+  onAlert,
 }: {
   activities: ActivityEvent[]
   slug: string
   deals?: DealRow[]
+  onAlert?: (result: ActivityActionResult) => void
 }) {
   const [modalOpen, setModalOpen] = useState(false)
-  const [alertBanner, setAlertBanner] = useState<string | null>(null)
+  const [localBanner, setLocalBanner] = useState<string | null>(null)
+  const alertBanner = onAlert ? null : localBanner
+  const reportAlert = (result: ActivityActionResult) => {
+    onAlert?.(result)
+    const msg = alertMessageFromActivity(result)
+    if (!onAlert && msg) setLocalBanner(msg)
+  }
 
   return (
     <>
@@ -555,44 +575,12 @@ export default function ActivityLog({
           slug={slug}
           deals={deals}
           onClose={() => setModalOpen(false)}
-          onLogged={(result) => {
-            if (!result.ok) return
-            if (result.alertsCreated && result.alertsCreated > 0) {
-              setAlertBanner(result.alertSummary ?? `Created ${result.alertsCreated} alert(s).`)
-            } else if (result.alertError) {
-              setAlertBanner(`Activity saved. Alerts: ${result.alertError}`)
-            }
-          }}
+          onLogged={reportAlert}
         />
       )}
       <div className="panel fade-up" style={{ marginTop: 0 }}>
         {alertBanner && (
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--text2)',
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--r-sm)',
-              padding: '8px 10px',
-              marginBottom: 10,
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 8,
-            }}
-          >
-            <span><span className="ai-badge" style={{ marginRight: 6 }}>✦ AI</span>{alertBanner}</span>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => setAlertBanner(null)}
-              style={{ fontSize: 10, padding: '0 4px', flexShrink: 0 }}
-              aria-label="Dismiss"
-            >
-              ✕
-            </button>
-          </div>
+          <AiAlertBanner message={alertBanner} onDismiss={() => setLocalBanner(null)} />
         )}
         <div
           style={{
@@ -636,14 +624,7 @@ export default function ActivityLog({
             activity={a}
             slug={slug}
             deals={deals}
-            onLogged={(result) => {
-              if (!result.ok) return
-              if (result.alertsCreated && result.alertsCreated > 0) {
-                setAlertBanner(result.alertSummary ?? `Created ${result.alertsCreated} alert(s).`)
-              } else if (result.alertError) {
-                setAlertBanner(`Activity saved. Alerts: ${result.alertError}`)
-              }
-            }}
+            onLogged={reportAlert}
           />
         ))}
 

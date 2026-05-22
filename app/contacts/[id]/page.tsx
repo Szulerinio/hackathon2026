@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { avatarClass } from '../../../lib/avatar'
 import {
@@ -8,9 +7,9 @@ import {
   getListingsForContact,
   getActivitiesForContact,
 } from '../../../lib/crm'
-import EditContactModal from '../edit-contact-modal'
+import Link from 'next/link'
+import ContactDetailClient from './contact-detail-client'
 import HouseholdMembers from './household-members'
-import ActivityLog from './activity-log'
 
 function DecayPill({ tier, days }: { tier: string; days: number }) {
   const cls = tier === 'urgent' ? 's-red' : tier === 'warning' ? 's-amber' : tier === 'watch' ? 's-blue' : 's-green'
@@ -56,15 +55,19 @@ export default async function ContactDetailPage({
   const isSeller = contact.type === 'seller' || contact.type === 'both'
   const isBuyer = contact.type === 'buyer' || contact.type === 'both'
 
-  return (
-    <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Link href="/contacts" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>
-          ← Contacts
-        </Link>
-        <EditContactModal contact={contact} />
-      </div>
+  const backLink = (
+    <Link href="/contacts" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>
+      ← Contacts
+    </Link>
+  )
 
+  return (
+    <ContactDetailClient
+      contact={contact}
+      activities={activities}
+      deals={allDeals}
+      backLink={backLink}
+    >
       {contact.lastInteractionSummary && (
         <div className="panel fade-up interaction-summary-panel" style={{ marginBottom: 14 }}>
           <div className="section-label">Last interaction</div>
@@ -178,8 +181,6 @@ export default async function ContactDetailPage({
           )}
         </div>
       </div>
-
-      <ActivityLog activities={activities} slug={contact.id} deals={allDeals} />
-    </>
+    </ContactDetailClient>
   )
 }

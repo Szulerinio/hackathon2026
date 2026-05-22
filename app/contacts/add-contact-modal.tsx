@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useRef, useState } from 'react'
+import { alertMessageFromMeta, stashContactAiBanner } from './alert-feedback'
 import { createContactAction, type CreateContactResult } from './actions'
 import ContactFormFields from './contact-form-fields'
 
@@ -19,6 +20,8 @@ export default function AddContactModal() {
 
   useEffect(() => {
     if (state?.ok) {
+      const msg = alertMessageFromMeta(state)
+      if (msg) stashContactAiBanner(state.slug, msg)
       setOpen(false)
       formRef.current?.reset()
       router.push(`/contacts/${state.slug}`)
@@ -95,7 +98,7 @@ export default function AddContactModal() {
                   className="btn-primary"
                   disabled={pending}
                 >
-                  {pending ? 'Saving…' : 'Save contact'}
+                  {pending ? 'Saving & analyzing…' : 'Save contact'}
                 </button>
               </div>
             </form>

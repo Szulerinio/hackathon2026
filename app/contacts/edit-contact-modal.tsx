@@ -22,7 +22,13 @@ function toFormValues(contact: Contact): ContactFormValues {
   }
 }
 
-export default function EditContactModal({ contact }: { contact: Contact }) {
+export default function EditContactModal({
+  contact,
+  onUpdated,
+}: {
+  contact: Contact
+  onUpdated?: (result: UpdateContactResult) => void
+}) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState(
@@ -33,10 +39,11 @@ export default function EditContactModal({ contact }: { contact: Contact }) {
 
   useEffect(() => {
     if (state?.ok) {
+      onUpdated?.(state)
       setOpen(false)
       router.refresh()
     }
-  }, [state, router])
+  }, [state, onUpdated, router])
 
   useEffect(() => {
     if (!open) return
@@ -114,7 +121,7 @@ export default function EditContactModal({ contact }: { contact: Contact }) {
                   className="btn-primary"
                   disabled={pending}
                 >
-                  {pending ? 'Saving…' : 'Save changes'}
+                  {pending ? 'Saving & analyzing…' : 'Save changes'}
                 </button>
               </div>
             </form>

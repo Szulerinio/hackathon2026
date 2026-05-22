@@ -1,15 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import {
+  runAlertExtraction,
+  type AlertExtractionMeta,
+} from "../../../lib/ai/alert-extraction-meta";
 import { formatActivityForAlertExtraction } from "../../../lib/ai/format-activity-text";
 import { prisma } from "../../../lib/prisma";
-import { extractAlertsFromTextAction } from "../../alerts/actions";
-
-type AlertExtractionMeta = {
-  alertsCreated?: number;
-  alertSummary?: string;
-  alertError?: string;
-};
 
 export type ActivityActionResult =
   | ({ ok: true } & AlertExtractionMeta)
@@ -45,18 +42,7 @@ async function extractAlertsFromActivity(
     mode,
   });
 
-  const ai = await extractAlertsFromTextAction(
-    text,
-    input.contactSlug,
-    "activity_log",
-  );
-  if (ai.ok) {
-    return {
-      alertsCreated: ai.created.length,
-      alertSummary: ai.summary,
-    };
-  }
-  return { alertError: ai.error };
+  return runAlertExtraction(text, input.contactSlug, "activity_log");
 }
 
 async function syncContactInteraction(contactId: number) {

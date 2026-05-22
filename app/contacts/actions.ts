@@ -2,16 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  runAlertExtraction,
+  type AlertExtractionMeta,
+} from "../../lib/ai/alert-extraction-meta";
+import { formatContactFieldsForAlertExtraction } from "../../lib/ai/format-contact-text";
+import {
   createContact,
   updateContact,
   type CreateContactInput,
 } from "../../lib/contacts-mutations";
 import { parseTags } from "../../lib/derive-contact";
+import { prisma } from "../../lib/prisma";
+
 export type CreateContactResult =
-  | { ok: true; slug: string }
+  | ({ ok: true; slug: string } & AlertExtractionMeta)
   | { ok: false; error: string };
 
-export type UpdateContactResult = CreateContactResult;
+export type UpdateContactResult =
+  | ({ ok: true; slug: string } & AlertExtractionMeta)
+  | { ok: false; error: string };
 
 function parseParticipantRole(
   raw: string,
@@ -57,7 +66,36 @@ function parseContactInput(
 function revalidateContactPaths(slug: string) {
   revalidatePath("/contacts");
   revalidatePath("/");
+  revalidatePath("/alerts");
+  revalidatePath("/ai/logs");
   revalidatePath(`/contacts/${slug}`);
+}
+
+function normalizeField(value: string | null | undefined): string {
+  return (value ?? "").trim();
+}
+
+async function extractAlertsFromContactFields(
+  input: {
+    contactName: string;
+    contactSlug: string;
+    context: string;
+    notes: string;
+  },
+  mode: "create" | "edit",
+): Promise<AlertExtractionMeta> {
+  const text = formatContactFieldsForAlertExtraction({
+    contactName: input.contactName,
+    context: input.context || null,
+    notes: input.notes || null,
+    mode,
+  });
+  if (text.trim().length < 10) return {};
+  return runAlertExtraction(
+    text,
+    input.contactSlug,
+    mode === "create" ? "contact_create" : "contact_edit",
+  );
 }
 
 export async function createContactAction(
@@ -66,10 +104,27 @@ export async function createContactAction(
   const parsed = parseContactInput(formData);
   if (!parsed.ok) return parsed;
 
+  const context = (parsed.input.context ?? "").trim();
+  const notes = (parsed.input.notes ?? "").trim();
+
   try {
     const { slug } = await createContact(parsed.input);
+
+    let alertMeta: AlertExtractionMeta = {};
+    if (context || notes) {
+      alertMeta = await extractAlertsFromContactFields(
+        {
+          contactName: parsed.input.name,
+          contactSlug: slug,
+          context,
+          notes,
+        },
+        "create",
+      );
+    }
+
     revalidateContactPaths(slug);
-    return { ok: true, slug };
+    return { ok: true, slug, ...alertMeta };
   } catch (err) {
     console.error("createContact failed:", err);
     return { ok: false, error: "Could not save contact. Try again." };
@@ -87,13 +142,38 @@ export async function updateContactAction(
   const parsed = parseContactInput(formData);
   if (!parsed.ok) return parsed;
 
+  const existing = await prisma.contact.findUnique({ where: { slug } });
+  if (!existing) {
+    return { ok: false, error: "Contact not found." };
+  }
+
+  const newContext = (parsed.input.context ?? "").trim();
+  const newNotes = (parsed.input.notes ?? "").trim();
+  const contextChanged =
+    normalizeField(existing.context) !== newContext;
+  const notesChanged = normalizeField(existing.notes) !== newNotes;
+
   try {
     const { slug: savedSlug } = await updateContact({
       slug,
       ...parsed.input,
     });
+
+    let alertMeta: AlertExtractionMeta = {};
+    if (contextChanged || notesChanged) {
+      alertMeta = await extractAlertsFromContactFields(
+        {
+          contactName: existing.name,
+          contactSlug: savedSlug,
+          context: newContext,
+          notes: newNotes,
+        },
+        "edit",
+      );
+    }
+
     revalidateContactPaths(savedSlug);
-    return { ok: true, slug: savedSlug };
+    return { ok: true, slug: savedSlug, ...alertMeta };
   } catch (err) {
     console.error("updateContact failed:", err);
     return { ok: false, error: "Could not update contact. Try again." };
