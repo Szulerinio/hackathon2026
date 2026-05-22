@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getContacts, getDeals, getListings } from '../../lib/crm'
 import AddDealModal from './add-deal-modal'
-import DealRow from './deal-row'
+import DealsView from './deals-view'
 
 const ACTIVE_STATUSES = ['viewing', 'offer', 'negotiation']
 
@@ -55,37 +55,7 @@ export default async function DealsPage({
         </div>
       )}
 
-      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 100px 120px 90px 72px',
-          gap: 8,
-          padding: '10px 16px',
-          borderBottom: '1px solid var(--border)',
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '0.07em',
-          textTransform: 'uppercase',
-          color: 'var(--text3)',
-        }}>
-          <div>Buyer</div>
-          <div>Property</div>
-          <div>Status</div>
-          <div>Value</div>
-          <div>Last activity</div>
-          <div />
-        </div>
-
-        {deals.map((d, i) => (
-          <DealRow
-            key={d.id}
-            deal={d}
-            buyers={buyers}
-            listings={listingOptions}
-            isLast={i === deals.length - 1}
-          />
-        ))}
-      </div>
+      <DealsView deals={deals} buyers={buyers} listings={listingOptions} />
     </>
   )
 }

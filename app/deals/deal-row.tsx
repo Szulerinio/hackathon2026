@@ -29,7 +29,7 @@ export default function DealRow({ deal, buyers, listings, isLast }: Props) {
       className="deal-grid-row"
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr 100px 120px 90px 72px',
+        gridTemplateColumns: '1.2fr 1.2fr 1fr 110px 100px 48px',
         gap: 8,
         padding: '12px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--border)',
@@ -48,8 +48,8 @@ export default function DealRow({ deal, buyers, listings, isLast }: Props) {
       <span style={{ fontSize: 12, color: 'var(--text2)' }}>
         {deal.propertyAddress}
       </span>
-      <span className={`s-pill ${statusPill(deal.status)}`}>{deal.status}</span>
       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-dim)' }}>{deal.value}</div>
+      <span className={`s-pill ${statusPill(deal.status)}`}>{deal.status}</span>
       <div style={{ fontSize: 11, color: 'var(--text3)' }}>{deal.lastActivityDate}</div>
       <div onClick={e => e.stopPropagation()}>
         <EditDealModal deal={deal} buyers={buyers} listings={listings} />

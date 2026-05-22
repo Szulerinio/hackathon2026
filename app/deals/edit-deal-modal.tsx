@@ -33,6 +33,7 @@ export default function EditDealModal({
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [state, formAction, pending] = useActionState(
     async (_prev: UpdateDealResult | null, formData: FormData) =>
       updateDealAction(formData),
@@ -59,13 +60,55 @@ export default function EditDealModal({
 
   return (
     <>
-      <button
-        type="button"
-        className="btn-ghost"
-        onClick={() => setOpen(true)}
-      >
-        Edit
-      </button>
+      <div style={{ position: 'relative' }}>
+        <button
+          type="button"
+          onClick={() => setMenuOpen(v => !v)}
+          style={{
+            width: 28, height: 28,
+            borderRadius: 6,
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--text3)',
+            fontSize: 16,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          aria-label="Deal options"
+        >
+          ⋮
+        </button>
+        {menuOpen && (
+          <>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setMenuOpen(false)} />
+            <div style={{
+              position: 'absolute', top: 32, right: 0,
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+              minWidth: 120,
+              zIndex: 100,
+              overflow: 'hidden',
+            }}>
+              <button
+                type="button"
+                onClick={() => { setMenuOpen(false); setOpen(true) }}
+                style={{
+                  width: '100%', padding: '9px 14px',
+                  textAlign: 'left', fontSize: 13,
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', color: 'var(--text)',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              >
+                Edit deal
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       {open && (
         <div

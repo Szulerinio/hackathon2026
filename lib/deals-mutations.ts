@@ -117,3 +117,24 @@ export async function updateDeal(
     buyerSlug: buyer.slug,
   };
 }
+
+export async function moveDeal(
+  id: number,
+  status: string,
+): Promise<{ buyerSlug: string }> {
+  const existing = await prisma.deal.findUnique({
+    where: { id },
+    include: { buyer: { select: { slug: true } } },
+  });
+  if (!existing) throw new Error("Deal not found.");
+
+  await prisma.deal.update({
+    where: { id },
+    data: {
+      status,
+      closedAt: status === "closed" ? new Date() : existing.closedAt,
+    },
+  });
+
+  return { buyerSlug: existing.buyer?.slug ?? "" };
+}

@@ -5,7 +5,6 @@ import {
   getDeals,
   getListings,
   getMyTasksFeed,
-  toTodayStripItems,
 } from '../lib/crm'
 
 export default async function DashboardPage() {
@@ -19,7 +18,6 @@ export default async function DashboardPage() {
 
   const activeListings = listings.filter(l => l.status === 'active').length
   const activeDeals = deals.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
-  const todayItems = toTodayStripItems(alerts)
   const topAlerts = alerts.slice(0, 4)
   const topTasks = myTasks.slice(0, 4)
   const today = new Date().toISOString().slice(0, 10)
@@ -30,29 +28,6 @@ export default async function DashboardPage() {
         <div>
           <div className="page-title">Good morning, Rafał</div>
           <div className="page-sub">{contacts.length} contacts · {activeDeals} active deals · {alerts.length} alerts</div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--accent-dim)', background: 'var(--accent-bg)', border: '1px solid var(--accent-border)', padding: '4px 10px', borderRadius: '20px' }}>
-          <div className="pulse" />
-          AI insights active
-        </div>
-      </div>
-
-      <div className="today-strip">
-        <div className="today-label">Today</div>
-        <div className="today-items">
-          {todayItems.length === 0 ? (
-            <div className="today-item" style={{ color: 'var(--text3)' }}>No urgent items — you&apos;re caught up</div>
-          ) : (
-            todayItems.map(item => (
-              <div key={item.id} className="today-item">
-                {item.icon}{' '}
-                <Link href={`/contacts/${item.contactSlug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <strong>{item.shortName}</strong>
-                </Link>{' '}
-                {item.summary}
-              </div>
-            ))
-          )}
         </div>
       </div>
 

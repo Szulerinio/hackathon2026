@@ -63,7 +63,7 @@ export default function Nav({ alertCount }: { alertCount: number }) {
     <>
       <header className="topbar">
         <div className="topbar-logo">
-          <Image src="/valuenest_logo_dark.svg" alt="ValueNest" width={160} height={45} priority />
+          <Image src="/valuenest_logo_dark.svg" alt="ValueNest" width={133} height={45} priority />
         </div>
         <nav className="topbar-nav">
           {NAV_ITEMS.map(item => (

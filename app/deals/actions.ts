@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createDeal, updateDeal } from "../../lib/deals-mutations";
+import { createDeal, moveDeal, updateDeal } from "../../lib/deals-mutations";
 
 export type CreateDealResult =
   | { ok: true; id: number }
@@ -108,5 +108,21 @@ export async function updateDealAction(
       }
     }
     return { ok: false, error: message };
+  }
+}
+
+export async function moveDealAction(
+  id: number,
+  status: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!DEAL_STATUSES.includes(status as (typeof DEAL_STATUSES)[number])) {
+    return { ok: false, error: "Invalid status." };
+  }
+  try {
+    const result = await moveDeal(id, status);
+    revalidateDealPaths(result.buyerSlug);
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Could not move deal." };
   }
 }

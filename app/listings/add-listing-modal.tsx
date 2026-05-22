@@ -49,7 +49,7 @@ export default function AddListingModal({
         disabled={noSellers}
         title={noSellers ? 'Add a contact first to use as seller' : undefined}
       >
-        Add listing
+        + Add listing
       </button>
 
       {open && (

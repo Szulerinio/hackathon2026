@@ -45,7 +45,7 @@ export default function AddContactModal() {
         className="btn-primary"
         onClick={() => setOpen(true)}
       >
-        Add contact
+        + Add contact
       </button>
 
       {open && (

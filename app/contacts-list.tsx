@@ -103,7 +103,7 @@ export default function ContactsList({
       <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '2fr 1fr 100px 140px 72px',
+          gridTemplateColumns: '2fr 80px 1fr 76px 1fr 80px 100px',
           gap: 8,
           padding: '10px 16px',
           borderBottom: '1px solid var(--border)',
@@ -114,10 +114,12 @@ export default function ContactsList({
           color: 'var(--text3)',
         }}>
           <div>Name</div>
-          <div>Relationship</div>
           <div>Type</div>
-          <div>Last contact</div>
+          <div>Relationship</div>
           <div>Status</div>
+          <div />
+          <div style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>HH Member</div>
+          <div>Last contact</div>
         </div>
 
         {displayed.map((c, i) => (
@@ -126,7 +128,7 @@ export default function ContactsList({
             href={`/contacts/${c.id}`}
             style={{
               display: 'grid',
-              gridTemplateColumns: '2fr 1fr 100px 140px 72px',
+              gridTemplateColumns: '2fr 80px 1fr 76px 1fr 80px 100px',
               gap: 8,
               padding: '11px 16px',
               borderBottom: i < displayed.length - 1 ? '1px solid var(--border)' : 'none',
@@ -139,26 +141,8 @@ export default function ContactsList({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <div className={`av ${avatarClass(c.id)}`}>{c.initials}</div>
-              <div>
-                <div className="cname" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {c.displayName}
-                  {c.isHousehold && (
-                    <span style={{
-                      background: 'var(--surface2)',
-                      color: 'var(--text3)',
-                      fontSize: 9,
-                      fontWeight: 600,
-                      padding: '1px 5px',
-                      borderRadius: 6,
-                      letterSpacing: '0.04em',
-                    }}>
-                      +{c.members.length}
-                    </span>
-                  )}
-                </div>
-              </div>
+              <div className="cname">{c.displayName}</div>
             </div>
-            <div className="crole">{c.relationship.split(',')[0]}</div>
             <div>
               {c.type && (
                 <span style={{
@@ -172,10 +156,15 @@ export default function ContactsList({
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.daysSince}d ago</div>
+            <div className="crole">{c.relationship.split(',')[0]}</div>
             <span className={`s-pill ${tierPill(c.decayTier)}`}>
               {c.decayTier === 'ok' ? 'ok' : c.decayTier}
             </span>
+            <div />
+            <div style={{ textAlign: 'center', fontSize: 14, color: 'var(--green)' }}>
+              {c.members.length > 0 ? '✓' : ''}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.daysSince}d ago</div>
           </Link>
         ))}
 

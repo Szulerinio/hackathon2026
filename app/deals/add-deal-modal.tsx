@@ -65,7 +65,7 @@ export default function AddDealModal({
         disabled={disabled}
         title={disabledTitle}
       >
-        Add deal
+        + Add deal
       </button>
 
       {open && (
