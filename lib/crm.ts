@@ -2,6 +2,7 @@ import { cache } from "react";
 import type {
   Contact as DbContact,
   HouseholdMember as DbHouseholdMember,
+  ActivityEvent as DbActivityEvent,
 } from "@/app/generated/prisma/client";
 import { prisma } from "./prisma";
 import { avatarClass } from "./avatar";
@@ -22,6 +23,14 @@ export type HouseholdMember = {
   email: string;
   note: string;
   role: string;
+};
+
+export type ActivityEvent = {
+  id: number;
+  type: string;
+  date: string;
+  notes: string;
+  createdAt: string;
 };
 
 export type Contact = {
@@ -141,7 +150,10 @@ function parseParticipantRole(
   return null;
 }
 
-type DbContactWithMembers = DbContact & { members: DbHouseholdMember[] };
+type DbContactWithMembers = DbContact & {
+  members: DbHouseholdMember[];
+  activities?: DbActivityEvent[];
+};
 
 function mapMember(m: DbHouseholdMember): HouseholdMember {
   return {
@@ -156,12 +168,23 @@ function mapMember(m: DbHouseholdMember): HouseholdMember {
 
 function mapContact(row: DbContactWithMembers): Contact {
   const tags = parseTagsJson(row.tags);
-  const lastInteractionDate = formatDate(row.lastInteractionDate);
+  const members = row.members.map(mapMember);
+
+  let lastInteractionDate = formatDate(row.lastInteractionDate);
+  let lastInteractionSummary = row.lastInteractionSummary ?? "";
+
+  if (row.activities && row.activities.length > 0) {
+    const latest = row.activities.slice().sort((a, b) =>
+      b.date.localeCompare(a.date)
+    )[0];
+    lastInteractionDate = formatDate(latest.date);
+    lastInteractionSummary = latest.notes ?? "";
+  }
+
   const decay = computeDecayWithThreshold(
     lastInteractionDate,
     row.decayThresholdDays,
   );
-  const members = row.members.map(mapMember);
 
   return {
     id: row.slug,
@@ -171,7 +194,7 @@ function mapContact(row: DbContactWithMembers): Contact {
     source: row.source ?? "",
     context: row.context ?? "",
     lastInteractionDate,
-    lastInteractionSummary: row.lastInteractionSummary ?? "",
+    lastInteractionSummary,
     tags,
     notes: row.notes ?? "",
     initials: getInitials(row.name),
@@ -187,6 +210,10 @@ function mapContact(row: DbContactWithMembers): Contact {
 }
 
 const memberInclude = { members: { orderBy: { createdAt: "asc" as const } } };
+const contactDetailInclude = {
+  members: { orderBy: { createdAt: "asc" as const } },
+  activities: { orderBy: { date: "desc" as const } },
+};
 
 export const getContacts = cache(async (): Promise<Contact[]> => {
   const rows = await prisma.contact.findMany({
@@ -200,9 +227,30 @@ export const getContact = cache(
   async (id: string): Promise<Contact | undefined> => {
     const row = await prisma.contact.findUnique({
       where: { slug: id },
-      include: memberInclude,
+      include: contactDetailInclude,
     });
     return row ? mapContact(row) : undefined;
+  },
+);
+
+export const getActivitiesForContact = cache(
+  async (contactSlug: string): Promise<ActivityEvent[]> => {
+    const contact = await prisma.contact.findUnique({
+      where: { slug: contactSlug },
+      select: { id: true },
+    });
+    if (!contact) return [];
+    const rows = await prisma.activityEvent.findMany({
+      where: { contactId: contact.id },
+      orderBy: { date: "desc" },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      type: r.type,
+      date: formatDate(r.date),
+      notes: r.notes ?? "",
+      createdAt: formatDate(r.createdAt),
+    }));
   },
 );
 

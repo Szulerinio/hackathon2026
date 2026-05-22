@@ -5,9 +5,11 @@ import {
   getContact,
   getDealsForContact,
   getListingsForContact,
+  getActivitiesForContact,
 } from '../../../lib/crm'
 import EditContactModal from '../edit-contact-modal'
 import HouseholdMembers from './household-members'
+import ActivityLog from './activity-log'
 
 function DecayPill({ tier, days }: { tier: string; days: number }) {
   const cls = tier === 'urgent' ? 's-red' : tier === 'warning' ? 's-amber' : tier === 'watch' ? 's-blue' : 's-green'
@@ -43,9 +45,10 @@ export default async function ContactDetailPage({
   if (!contact) notFound()
 
   const avClass = avatarClass(contact.id)
-  const [linkedListings, linkedDeals] = await Promise.all([
+  const [linkedListings, linkedDeals, activities] = await Promise.all([
     getListingsForContact(contact.id),
     getDealsForContact(contact.id),
+    getActivitiesForContact(contact.id),
   ])
 
   const isSeller = contact.type === 'seller' || contact.type === 'both'
@@ -171,6 +174,8 @@ export default async function ContactDetailPage({
           )}
         </div>
       </div>
+
+      <ActivityLog activities={activities} slug={contact.id} />
     </>
   )
 }
