@@ -99,9 +99,24 @@ export default async function DashboardPage() {
             <div className="areason">{alert.reason.slice(0, 110)}{alert.reason.length > 110 ? '…' : ''}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
               <Link href={`/contacts/${alert.contactSlug}`} className="aaction">→ View contact</Link>
-              <span style={{ fontSize: 10, color: 'var(--text3)', background: 'var(--surface2)', padding: '2px 7px', borderRadius: 6, fontWeight: 600 }}>
-                {alert.actionLabel}
-              </span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {alert.contactEmail && (
+                  <a
+                    href={`mailto:${alert.contactEmail}`}
+                    style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', background: '#fff', border: '1px solid var(--border2)', borderRadius: 'var(--r-sm)', padding: '2px 8px', textDecoration: 'none' }}
+                  >
+                    Email
+                  </a>
+                )}
+                {alert.contactPhone && (
+                  <a
+                    href={`tel:${alert.contactPhone}`}
+                    style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', background: '#fff', border: '1px solid var(--border2)', borderRadius: 'var(--r-sm)', padding: '2px 8px', textDecoration: 'none' }}
+                  >
+                    Call
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         ))}
