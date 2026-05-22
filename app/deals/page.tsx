@@ -11,13 +11,22 @@ function statusPill(status: string) {
   return 's-dim'
 }
 
-export default async function DealsPage() {
-  const [deals, contacts, listings] = await Promise.all([
+const ACTIVE_STATUSES = ['viewing', 'offer', 'negotiation']
+
+export default async function DealsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
+  const [allDeals, contacts, listings] = await Promise.all([
     getDeals(),
     getContacts(),
     getListings(),
   ])
-  const activeCount = deals.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
+  const { filter } = await searchParams
+  const isFiltered = filter === 'active'
+  const deals = isFiltered ? allDeals.filter(d => ACTIVE_STATUSES.includes(d.status)) : allDeals
+  const activeCount = allDeals.filter(d => ACTIVE_STATUSES.includes(d.status)).length
   const buyers = contacts
     .map((c) => ({ slug: c.id, name: c.name }))
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -30,10 +39,29 @@ export default async function DealsPage() {
       <div className="page-header" style={{ marginBottom: 16 }}>
         <div>
           <div className="page-title">Deals</div>
-          <div className="page-sub">{activeCount} active · {deals.length} total</div>
+          <div className="page-sub">{activeCount} active · {allDeals.length} total</div>
         </div>
         <AddDealModal buyers={buyers} listings={listingOptions} />
       </div>
+
+      {isFiltered && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 600,
+            padding: '3px 8px',
+            borderRadius: 4,
+            background: 'rgba(200,241,53,0.08)',
+            color: 'var(--accent-dim)',
+            border: '1px solid rgba(200,241,53,0.2)',
+          }}>
+            Active only
+          </span>
+          <Link href="/deals" style={{ fontSize: 11, color: 'var(--text3)', textDecoration: 'none' }}>
+            View all →
+          </Link>
+        </div>
+      )}
 
       <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{

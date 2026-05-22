@@ -9,9 +9,16 @@ function statusPill(status: string) {
   return 's-dim'
 }
 
-export default async function ListingsPage() {
-  const [listings, contacts] = await Promise.all([getListings(), getContacts()])
-  const activeCount = listings.filter(l => l.status === 'active').length
+export default async function ListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
+  const [allListings, contacts] = await Promise.all([getListings(), getContacts()])
+  const { filter } = await searchParams
+  const isFiltered = filter === 'active'
+  const listings = isFiltered ? allListings.filter(l => l.status === 'active') : allListings
+  const activeCount = allListings.filter(l => l.status === 'active').length
   const sellers = contacts
     .map((c) => ({ slug: c.id, name: c.name }))
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -21,10 +28,29 @@ export default async function ListingsPage() {
       <div className="page-header" style={{ marginBottom: 16 }}>
         <div>
           <div className="page-title">Listings</div>
-          <div className="page-sub">{activeCount} active · {listings.length} total</div>
+          <div className="page-sub">{activeCount} active · {allListings.length} total</div>
         </div>
         <AddListingModal sellers={sellers} />
       </div>
+
+      {isFiltered && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 600,
+            padding: '3px 8px',
+            borderRadius: 4,
+            background: 'rgba(20,120,58,0.12)',
+            color: 'var(--green)',
+            border: '1px solid rgba(20,120,58,0.2)',
+          }}>
+            Active only
+          </span>
+          <Link href="/listings" style={{ fontSize: 11, color: 'var(--text3)', textDecoration: 'none' }}>
+            View all →
+          </Link>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {listings.map(l => (

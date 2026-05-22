@@ -53,26 +53,26 @@ export default async function DashboardPage() {
       </div>
 
       <div className="metrics-row">
-        <div className="mcard">
+        <Link href="/contacts" className="mcard" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
           <div className="mlabel">Total contacts</div>
           <div className="mval">{contacts.length}</div>
           <div className="msub">people across your network</div>
-        </div>
-        <div className="mcard green-card">
+        </Link>
+        <Link href="/listings?filter=active" className="mcard green-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
           <div className="mlabel">Active listings</div>
           <div className="mval green">{activeListings}</div>
           <div className="msub up">{listings.length} total properties</div>
-        </div>
-        <div className="mcard accent-card">
+        </Link>
+        <Link href="/deals?filter=active" className="mcard accent-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
           <div className="mlabel">Active deals</div>
           <div className="mval" style={{ color: 'var(--accent-dim)' }}>{activeDeals}</div>
           <div className="msub">{deals.length} total deals</div>
-        </div>
-        <div className="mcard alert-card">
+        </Link>
+        <Link href="/alerts" className="mcard alert-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
           <div className="mlabel">Alerts</div>
           <div className="mval red">{alerts.length}</div>
           <div className="msub dn">AI-generated from notes</div>
-        </div>
+        </Link>
       </div>
 
       <div className="panel" style={{ borderColor: 'rgba(204,43,43,0.2)' }}>
