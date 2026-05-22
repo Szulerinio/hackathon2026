@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { LISTINGS } from '../../lib/mock-data'
-import { slugify } from '../../lib/data'
+import { getListings } from '../../lib/crm'
 
 function statusPill(status: string) {
   if (status === 'active') return 's-green'
@@ -8,26 +7,26 @@ function statusPill(status: string) {
   return 's-dim'
 }
 
-const activeCount = LISTINGS.filter(l => l.status === 'active').length
+export default async function ListingsPage() {
+  const listings = await getListings()
+  const activeCount = listings.filter(l => l.status === 'active').length
 
-export default function ListingsPage() {
   return (
     <>
       <div className="page-header" style={{ marginBottom: 16 }}>
         <div>
           <div className="page-title">Listings</div>
-          <div className="page-sub">{activeCount} active · {LISTINGS.length} total</div>
+          <div className="page-sub">{activeCount} active · {listings.length} total</div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {LISTINGS.map(l => (
+        {listings.map(l => (
           <div
             key={l.id}
             className="panel"
             style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: 10 }}
           >
-            {/* Photo placeholder */}
             <div style={{
               background: 'var(--surface3)',
               borderRadius: 'var(--r-sm)',
@@ -42,7 +41,6 @@ export default function ListingsPage() {
               PHOTO
             </div>
 
-            {/* Info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.4 }}>
@@ -61,7 +59,7 @@ export default function ListingsPage() {
                 <div style={{ fontSize: 11, color: 'var(--text3)' }}>
                   Seller:{' '}
                   <Link
-                    href={`/contacts/${slugify(l.sellerName)}`}
+                    href={`/contacts/${l.sellerSlug}`}
                     style={{ color: 'var(--text2)', textDecoration: 'none', fontWeight: 500 }}
                   >
                     {l.sellerName}

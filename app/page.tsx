@@ -1,21 +1,24 @@
 import Link from 'next/link'
-import { getContacts, slugify } from '../lib/data'
-import { LISTINGS, DEALS, ALERTS } from '../lib/mock-data'
+import { getAlertFeed, getContacts, getDeals, getListings } from '../lib/crm'
 
 export default async function DashboardPage() {
-  const contacts = getContacts()
+  const [contacts, listings, deals, alerts] = await Promise.all([
+    getContacts(),
+    getListings(),
+    getDeals(),
+    getAlertFeed(),
+  ])
 
-  const activeListings = LISTINGS.filter(l => l.status === 'active').length
-  const activeDeals = DEALS.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
-  const topAlerts = [...ALERTS].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 4)
+  const activeListings = listings.filter(l => l.status === 'active').length
+  const activeDeals = deals.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
+  const topAlerts = alerts.slice(0, 4)
 
   return (
     <>
-      {/* Page header */}
       <div className="page-header">
         <div>
           <div className="page-title">Good morning, Rafał</div>
-          <div className="page-sub">{contacts.length} contacts · {activeDeals} active deals · {ALERTS.length} alerts</div>
+          <div className="page-sub">{contacts.length} contacts · {activeDeals} active deals · {alerts.length} alerts</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--accent-dim)', background: 'var(--accent-bg)', border: '1px solid var(--accent-border)', padding: '4px 10px', borderRadius: '20px' }}>
           <div className="pulse" />
@@ -23,7 +26,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Today strip */}
       <div className="today-strip">
         <div className="today-label">Today</div>
         <div className="today-items">
@@ -33,7 +35,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="metrics-row">
         <div className="mcard">
           <div className="mlabel">Total contacts</div>
@@ -43,21 +44,20 @@ export default async function DashboardPage() {
         <div className="mcard">
           <div className="mlabel">Active listings</div>
           <div className="mval green">{activeListings}</div>
-          <div className="msub up">{LISTINGS.length} total properties</div>
+          <div className="msub up">{listings.length} total properties</div>
         </div>
         <div className="mcard">
           <div className="mlabel">Active deals</div>
           <div className="mval" style={{ color: 'var(--accent-dim)' }}>{activeDeals}</div>
-          <div className="msub">{DEALS.length} total deals</div>
+          <div className="msub">{deals.length} total deals</div>
         </div>
         <div className="mcard alert-card">
           <div className="mlabel">Alerts</div>
-          <div className="mval red">{ALERTS.length}</div>
+          <div className="mval red">{alerts.length}</div>
           <div className="msub dn">AI-generated from notes</div>
         </div>
       </div>
 
-      {/* Alerts panel */}
       <div className="panel" style={{ borderColor: 'rgba(204,43,43,0.2)' }}>
         <div className="panel-hdr" style={{ marginBottom: 8 }}>
           <div className="panel-title">Recent alerts</div>
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
             </div>
             <div className="areason">{alert.reason.slice(0, 110)}{alert.reason.length > 110 ? '…' : ''}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-              <Link href={`/contacts/${slugify(alert.contactName)}`} className="aaction">→ View contact</Link>
+              <Link href={`/contacts/${alert.contactSlug}`} className="aaction">→ View contact</Link>
               <span style={{ fontSize: 10, color: 'var(--text3)', background: 'var(--surface2)', padding: '2px 7px', borderRadius: 6, fontWeight: 600 }}>
                 {alert.actionLabel}
               </span>

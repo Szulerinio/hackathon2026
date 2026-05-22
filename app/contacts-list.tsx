@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import type { Contact } from '../lib/data'
+import type { Contact } from '../lib/crm'
 
 const FILTERS = [
   { key: 'all', label: 'All' },

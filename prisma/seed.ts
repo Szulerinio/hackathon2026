@@ -10,6 +10,7 @@ import {
   parseTags,
 } from "../lib/derive-contact";
 import { slugify } from "../lib/decay";
+import { ALERTS, CONTACT_TYPES, DEALS, LISTINGS } from "../lib/mock-data";
 
 type CsvRow = {
   name: string;
@@ -22,101 +23,6 @@ type CsvRow = {
   notes: string;
 };
 
-type DealSeed = {
-  contactName: string;
-  title: string;
-  subtitle: string;
-  status: string;
-  valueDisplay: string;
-  valuePln: number;
-};
-
-type AlertSeed = {
-  contactName: string;
-  reason: string;
-  suggestedAction: string;
-  severity: "urgent" | "warning";
-  daysSince: number;
-};
-
-const DEALS: DealSeed[] = [
-  {
-    contactName: "Beata Mazur",
-    title: "Sienkiewicza — family home sale",
-    subtitle: "Beata Mazur · widow · seller + future buyer",
-    status: "listing",
-    valueDisplay: "850K",
-    valuePln: 850_000,
-  },
-  {
-    contactName: "Marek Kowalski",
-    title: "University district — investment apt",
-    subtitle: "Marek Kowalski · investor · 2nd purchase",
-    status: "viewing",
-    valueDisplay: "420K",
-    valuePln: 420_000,
-  },
-  {
-    contactName: "Anna Krajewska",
-    title: "Luxury 200sqm — via Anna K",
-    subtitle: "CEO Laboratorium Kosmetyczne · referral",
-    status: "hot_lead",
-    valueDisplay: "1.2M+",
-    valuePln: 1_200_000,
-  },
-  {
-    contactName: "Szymon Kaczmarek",
-    title: "Airbnb 2-bed city center",
-    subtitle: "Szymon Kaczmarek · car dealer · BNI",
-    status: "cold_lead",
-    valueDisplay: "380K",
-    valuePln: 380_000,
-  },
-  {
-    contactName: "Ewa Szymańska",
-    title: "Commercial office 80sqm Kazimierz",
-    subtitle: "Ewa Szymańska · notary · wants to own",
-    status: "scouting",
-    valueDisplay: "600K",
-    valuePln: 600_000,
-  },
-];
-
-const ALERTS: AlertSeed[] = [
-  {
-    contactName: "Anna Krajewska",
-    reason:
-      "Your best referral source. Her CEO's 200sqm luxury search — you promised 3 options last week. Every day of silence risks the deal.",
-    suggestedAction: "Send luxury listings in Śródmieście today",
-    severity: "urgent",
-    daysSince: 33,
-  },
-  {
-    contactName: "Stefan Fischer",
-    reason:
-      "Expat client with investment ambitions. You said you'd research non-resident tax 55 days ago. Silence erodes trust faster than a wrong answer.",
-    suggestedAction: "Send answer or honest status update now",
-    severity: "urgent",
-    daysSince: 55,
-  },
-  {
-    contactName: "Szymon Kaczmarek",
-    reason:
-      "Came back from Dubai fired up about an Airbnb apartment. Said he'd call — he didn't. These buyers go quiet and sign with someone else.",
-    suggestedAction: "Call today, open with the Dubai trip",
-    severity: "urgent",
-    daysSince: 63,
-  },
-  {
-    contactName: "Beata Mazur",
-    reason:
-      "Anxious widow selling her family home. Waiting 2 weeks on the parking spot land registry check. Small thing to you, huge thing to her.",
-    suggestedAction: "Check land registry now, call her with the answer",
-    severity: "warning",
-    daysSince: 40,
-  },
-];
-
 const REFERRAL_LINKS: [string, string][] = [
   ["Natalia Kwiatkowska", "Anna Krajewska"],
   ["Beata Mazur", "Teresa Głowacka"],
@@ -127,6 +33,12 @@ const LIFE_EVENTS: [string, string, string][] = [
   ["Jakub Wójcik", "2026-06-15", "Baby due (Magda)"],
   ["Paweł Adamczyk", "2026-09-12", "Wedding day"],
 ];
+
+function parseValuePln(display: string): number | null {
+  const digits = display.replace(/[^\d]/g, "");
+  if (!digits) return null;
+  return Number(digits);
+}
 
 async function main() {
   await prisma.alert.deleteMany();
@@ -157,6 +69,7 @@ async function main() {
         notes: row.notes || null,
         tags: JSON.stringify(tags),
         contactType: deriveContactType(tags),
+        participantRole: CONTACT_TYPES[row.name] ?? null,
         decayThresholdDays: deriveDecayThresholdDays(tags),
         isHousehold: deriveIsHousehold(row.name, row.relationship, tags),
       },
@@ -185,33 +98,79 @@ async function main() {
     }
   }
 
-  for (const deal of DEALS) {
-    const ownerId = idByName.get(deal.contactName);
-    if (!ownerId) {
-      console.warn(`Skipping deal — contact not found: ${deal.contactName}`);
-      continue;
-    }
-
-    const listing = await prisma.listing.create({
+  async function ensureContact(name: string, role?: string) {
+    const existing = idByName.get(name);
+    if (existing) return existing;
+    const contact = await prisma.contact.create({
       data: {
-        title: deal.title,
-        subtitle: deal.subtitle,
-        ownerId,
-        valueDisplay: deal.valueDisplay,
-        valuePln: deal.valuePln,
-        status: "active",
+        slug: slugify(name),
+        name,
+        relationship: "listing seller (seed)",
+        source: "demo data",
+        context: "Synthetic contact for property listings in demo dataset.",
+        tags: JSON.stringify(["past client"]),
+        contactType: "past_client",
+        participantRole: role ?? CONTACT_TYPES[name] ?? "seller",
+        decayThresholdDays: 90,
       },
     });
+    idByName.set(name, contact.id);
+    return contact.id;
+  }
+
+  const listingIdByAddress = new Map<string, number>();
+
+  for (const listing of LISTINGS) {
+    const ownerId = await ensureContact(listing.sellerName, "seller");
+    const row = await prisma.listing.create({
+      data: {
+        title: listing.address,
+        address: listing.address,
+        ownerId,
+        valueDisplay: listing.price,
+        valuePln: parseValuePln(listing.price),
+        status: listing.status,
+        daysOnMarket: listing.daysOnMarket,
+      },
+    });
+    listingIdByAddress.set(listing.address, row.id);
+  }
+
+  for (const deal of DEALS) {
+    const buyerId = await ensureContact(deal.buyerName);
+
+    let listingId = listingIdByAddress.get(deal.propertyAddress);
+    if (!listingId) {
+      const mockListing = LISTINGS.find(
+        (l) =>
+          deal.propertyAddress.includes(l.address.split(",")[0].trim()) ||
+          l.address.includes(deal.propertyAddress.split(",")[0].trim()),
+      );
+      const sellerName = mockListing?.sellerName ?? "Tomasz Wierzbicki";
+      const ownerId = await ensureContact(sellerName, "seller");
+      const row = await prisma.listing.create({
+        data: {
+          title: deal.propertyAddress,
+          address: deal.propertyAddress,
+          ownerId,
+          valueDisplay: deal.value,
+          valuePln: parseValuePln(deal.value),
+          status: "active",
+        },
+      });
+      listingId = row.id;
+      listingIdByAddress.set(deal.propertyAddress, listingId);
+    }
 
     await prisma.deal.create({
       data: {
-        listingId: listing.id,
-        buyerId: ownerId,
+        listingId,
+        buyerId,
         status: deal.status,
-        title: deal.title,
-        subtitle: deal.subtitle,
-        valueDisplay: deal.valueDisplay,
-        valuePln: deal.valuePln,
+        title: deal.propertyAddress,
+        valueDisplay: deal.value,
+        valuePln: parseValuePln(deal.value),
+        lastActivityDate: deal.lastActivityDate,
       },
     });
   }
@@ -226,9 +185,9 @@ async function main() {
       data: {
         contactId,
         reason: alert.reason,
-        suggestedAction: alert.suggestedAction,
-        severity: alert.severity,
-        daysSince: alert.daysSince,
+        suggestedAction: alert.actionLabel,
+        severity: "warning",
+        generatedAt: new Date(`${alert.createdAt}T12:00:00`),
       },
     });
   }

@@ -1,8 +1,8 @@
-import { getContacts } from '../../lib/data'
+import { getContacts } from '../../lib/crm'
 import ContactsList from '../contacts-list'
 
 export default async function ContactsPage() {
-  const contacts = getContacts()
+  const contacts = await getContacts()
   return (
     <>
       <div className="page-header" style={{ marginBottom: 16 }}>

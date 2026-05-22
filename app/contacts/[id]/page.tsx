@@ -1,14 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getContact, slugify } from '../../../lib/data'
-import { LISTINGS, DEALS } from '../../../lib/mock-data'
-
-const AV_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5']
-function avatarClass(id: string) {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return AV_COLORS[h % AV_COLORS.length]
-}
+import { avatarClass } from '../../../lib/avatar'
+import {
+  getContact,
+  getDealsForContact,
+  getListingsForContact,
+} from '../../../lib/crm'
 
 function DecayPill({ tier, days }: { tier: string; days: number }) {
   const cls = tier === 'urgent' ? 's-red' : tier === 'warning' ? 's-amber' : tier === 'watch' ? 's-blue' : 's-green'
@@ -40,13 +37,14 @@ export default async function ContactDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const contact = getContact(id)
+  const contact = await getContact(id)
   if (!contact) notFound()
 
   const avClass = avatarClass(contact.id)
-
-  const linkedListings = LISTINGS.filter(l => slugify(l.sellerName) === contact.id)
-  const linkedDeals = DEALS.filter(d => slugify(d.buyerName) === contact.id)
+  const [linkedListings, linkedDeals] = await Promise.all([
+    getListingsForContact(contact.id),
+    getDealsForContact(contact.id),
+  ])
 
   const isSeller = contact.type === 'seller' || contact.type === 'both'
   const isBuyer = contact.type === 'buyer' || contact.type === 'both'
@@ -60,7 +58,6 @@ export default async function ContactDetailPage({
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14 }}>
-        {/* Left col */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel fade-up">
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 10, paddingBottom: 14, borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
@@ -100,7 +97,6 @@ export default async function ContactDetailPage({
           </div>
         </div>
 
-        {/* Right col */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel fade-up">
             <div className="section-label">Context & background</div>
@@ -118,7 +114,6 @@ export default async function ContactDetailPage({
             </div>
           )}
 
-          {/* Their Listings */}
           {isSeller && (
             <div className="panel fade-up">
               <div className="section-label" style={{ marginBottom: 10 }}>Their listings</div>
@@ -140,7 +135,6 @@ export default async function ContactDetailPage({
             </div>
           )}
 
-          {/* Their Deals */}
           {isBuyer && (
             <div className="panel fade-up">
               <div className="section-label" style={{ marginBottom: 10 }}>Their deals</div>

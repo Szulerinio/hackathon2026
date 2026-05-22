@@ -1,21 +1,20 @@
 import Link from 'next/link'
-import { ALERTS } from '../../lib/mock-data'
-import { slugify } from '../../lib/data'
+import { getAlertFeed } from '../../lib/crm'
 
-export default function AlertsPage() {
-  const sorted = [...ALERTS].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+export default async function AlertsPage() {
+  const alerts = await getAlertFeed()
 
   return (
     <>
       <div className="page-header" style={{ marginBottom: 16 }}>
         <div>
           <div className="page-title">Alerts</div>
-          <div className="page-sub">AI-generated from contact notes · {ALERTS.length} active</div>
+          <div className="page-sub">AI-generated from contact notes · {alerts.length} active</div>
         </div>
         <span className="ai-badge">✦ AI</span>
       </div>
 
-      {sorted.length === 0 ? (
+      {alerts.length === 0 ? (
         <div className="panel" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text3)' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>✦</div>
           <div style={{ fontSize: 14, marginBottom: 4 }}>No alerts right now</div>
@@ -23,7 +22,7 @@ export default function AlertsPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {sorted.map(alert => (
+          {alerts.map(alert => (
             <div
               key={alert.id}
               className="panel"
@@ -32,7 +31,7 @@ export default function AlertsPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <Link
-                    href={`/contacts/${slugify(alert.contactName)}`}
+                    href={`/contacts/${alert.contactSlug}`}
                     style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', textDecoration: 'none' }}
                   >
                     {alert.contactName}

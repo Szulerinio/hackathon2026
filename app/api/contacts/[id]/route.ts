@@ -1,4 +1,4 @@
-import { getContact } from '../../../../lib/data'
+import { getContact } from '../../../../lib/crm'
 
 export async function GET(
   _req: Request,

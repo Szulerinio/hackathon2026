@@ -10,6 +10,8 @@ import {
   type DecayTier,
 } from "./decay";
 
+export type ParticipantRole = "seller" | "buyer" | "both";
+
 export type Contact = {
   id: string;
   name: string;
@@ -25,30 +27,36 @@ export type Contact = {
   decayScore: number;
   decayTier: DecayTier;
   isHousehold: boolean;
+  type: ParticipantRole | null;
 };
 
-export type Listing = {
+export type ListingCard = {
   id: number;
-  title: string;
-  subtitle: string;
   address: string;
-  ownerId: string;
-  ownerName: string;
-  value: string;
+  price: string;
+  sellerName: string;
+  sellerSlug: string;
   status: string;
+  daysOnMarket: number;
 };
 
-export type Deal = {
+export type DealRow = {
   id: number;
-  listingId: number;
-  contactId: string | null;
-  title: string;
-  subtitle: string;
+  buyerName: string;
+  buyerSlug: string;
+  propertyAddress: string;
   status: string;
-  statusClass: string;
   value: string;
-  initials: string;
-  avClass: string;
+  lastActivityDate: string;
+};
+
+export type AlertFeedItem = {
+  id: number;
+  contactName: string;
+  contactSlug: string;
+  reason: string;
+  actionLabel: string;
+  createdAt: string;
 };
 
 export type Alert = {
@@ -77,6 +85,13 @@ function parseTagsJson(raw: string | null): string[] {
     .filter(Boolean);
 }
 
+function parseParticipantRole(
+  raw: string | null | undefined,
+): ParticipantRole | null {
+  if (raw === "seller" || raw === "buyer" || raw === "both") return raw;
+  return null;
+}
+
 function mapContact(row: DbContact): Contact {
   const tags = parseTagsJson(row.tags);
   const lastInteractionDate = formatDate(row.lastInteractionDate);
@@ -100,21 +115,8 @@ function mapContact(row: DbContact): Contact {
     decayScore: decay.score,
     decayTier: decay.tier,
     isHousehold: row.isHousehold,
+    type: parseParticipantRole(row.participantRole),
   };
-}
-
-const DEAL_STATUS_CLASS: Record<string, string> = {
-  open: "s-blue",
-  closed: "s-dim",
-  listing: "s-amber",
-  viewing: "s-blue",
-  hot_lead: "s-red",
-  cold_lead: "s-dim",
-  scouting: "s-dim",
-};
-
-function formatDealStatus(status: string): string {
-  return status.replace(/_/g, " ");
 }
 
 export const getContacts = cache(async (): Promise<Contact[]> => {
@@ -129,61 +131,66 @@ export const getContact = cache(
   },
 );
 
-export const getListings = cache(async (): Promise<Listing[]> => {
+export const getListings = cache(async (): Promise<ListingCard[]> => {
   const rows = await prisma.listing.findMany({
     include: { owner: true },
-    orderBy: { title: "asc" },
+    orderBy: { createdAt: "desc" },
   });
 
-  return rows.map((row) => ({
+  return rows
+    .map((row) => ({
     id: row.id,
-    title: row.title,
-    subtitle: row.subtitle ?? "",
-    address: row.address ?? "",
-    ownerId: row.owner.slug,
-    ownerName: row.owner.name,
-    value: row.valueDisplay ?? "",
+    address: row.address ?? row.title,
+    price: row.valueDisplay ?? "",
+    sellerName: row.owner.name,
+    sellerSlug: row.owner.slug,
     status: row.status,
-  }));
+    daysOnMarket: row.daysOnMarket ?? 0,
+  }))
+    .sort((a, b) => b.daysOnMarket - a.daysOnMarket);
 });
 
-export const getDeals = cache(async (): Promise<Deal[]> => {
+export const getListingsForContact = cache(
+  async (contactSlug: string): Promise<ListingCard[]> => {
+    const listings = await getListings();
+    return listings.filter((l) => l.sellerSlug === contactSlug);
+  },
+);
+
+export const getDeals = cache(async (): Promise<DealRow[]> => {
   const rows = await prisma.deal.findMany({
     include: {
-      listing: { include: { owner: true } },
+      listing: true,
       buyer: true,
     },
-    orderBy: { valuePln: "desc" },
+    orderBy: { updatedAt: "desc" },
   });
 
-  return rows.map((row) => {
-    const person = row.buyer ?? row.listing.owner;
-    const contactId = person.slug;
-    const title = row.title ?? row.listing.title;
-    const subtitle =
-      row.subtitle ??
-      `${person.name}${row.buyer ? "" : ` · owner`}`;
-
-    return {
-      id: row.id,
-      listingId: row.listingId,
-      contactId,
-      title,
-      subtitle,
-      status: formatDealStatus(row.status),
-      statusClass: DEAL_STATUS_CLASS[row.status] ?? "s-dim",
-      value: row.valueDisplay ?? "",
-      initials: getInitials(person.name),
-      avClass: avatarClass(contactId),
-    };
-  });
+  return rows
+    .map((row) => ({
+    id: row.id,
+    buyerName: row.buyer?.name ?? "—",
+    buyerSlug: row.buyer?.slug ?? "",
+    propertyAddress: row.listing.address ?? row.listing.title,
+    status: row.status,
+    value: row.valueDisplay ?? "",
+    lastActivityDate: formatDate(row.lastActivityDate),
+  }))
+    .sort((a, b) => b.lastActivityDate.localeCompare(a.lastActivityDate));
 });
+
+export const getDealsForContact = cache(
+  async (contactSlug: string): Promise<DealRow[]> => {
+    const deals = await getDeals();
+    return deals.filter((d) => d.buyerSlug === contactSlug);
+  },
+);
 
 export const getAlerts = cache(async (): Promise<Alert[]> => {
   const rows = await prisma.alert.findMany({
     where: { isActive: true },
     include: { contact: true },
-    orderBy: [{ severity: "asc" }, { daysSince: "desc" }],
+    orderBy: { generatedAt: "desc" },
   });
 
   const severityOrder: Record<string, number> = {
@@ -214,3 +221,22 @@ export const getAlerts = cache(async (): Promise<Alert[]> => {
     };
   });
 });
+
+export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
+  const rows = await prisma.alert.findMany({
+    where: { isActive: true },
+    include: { contact: true },
+    orderBy: { generatedAt: "desc" },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    contactName: row.contact.name,
+    contactSlug: row.contact.slug,
+    reason: row.reason,
+    actionLabel: row.suggestedAction ?? "Follow up",
+    createdAt: formatDate(row.generatedAt),
+  }));
+});
+
+export { slugify };

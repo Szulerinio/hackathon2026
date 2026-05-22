@@ -1,4 +1,4 @@
-import { getContacts } from '../../../lib/data'
+import { getContacts } from '../../../lib/crm'
 
 export async function GET() {
   const contacts = await getContacts()

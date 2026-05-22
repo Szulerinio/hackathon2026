@@ -8,8 +8,28 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaSchemaVersion?: string;
+};
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// Bump when schema changes so dev hot-reload picks up a new client (avoids stale DMMF).
+const PRISMA_SCHEMA_VERSION = "20260522111804";
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+function getPrisma(): PrismaClient {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    globalForPrisma.prisma &&
+    globalForPrisma.prismaSchemaVersion !== PRISMA_SCHEMA_VERSION
+  ) {
+    void globalForPrisma.prisma.$disconnect();
+    globalForPrisma.prisma = undefined;
+  }
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+    globalForPrisma.prismaSchemaVersion = PRISMA_SCHEMA_VERSION;
+  }
+  return globalForPrisma.prisma;
+}
+
+export const prisma = getPrisma();

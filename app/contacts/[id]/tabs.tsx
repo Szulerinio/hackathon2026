@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { Contact } from '../../../lib/data'
+import type { Contact } from '../../../lib/crm'
 
 const AV_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5']
 function avatarClass(id: string) {
