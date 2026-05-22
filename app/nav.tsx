@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -19,21 +20,21 @@ function buildSidebarItems(alertCount: number): { section: string; items: Sideba
       section: 'Overview',
       items: [
         { href: '/', label: 'Dashboard', icon: '▤', badge: null, badgeType: null },
-        { href: '/contacts', label: 'All contacts', icon: '⊙', badge: null, badgeType: null },
         {
           href: '/alerts',
-          label: 'Alerts',
+          label: 'Smart Alerts',
           icon: '◈',
           badge: alertCount > 0 ? String(alertCount) : null,
           badgeType: 'red',
         },
+        { href: '/deals', label: 'Active Deals', icon: '◫', badge: null, badgeType: null },
       ],
     },
     {
       section: 'Business',
       items: [
-        { href: '/listings', label: 'Listings', icon: '⊟', badge: null, badgeType: null },
-        { href: '/deals', label: 'Deals', icon: '◫', badge: null, badgeType: null },
+        { href: '/contacts', label: 'All Contacts', icon: '⊙', badge: null, badgeType: null },
+        { href: '/listings', label: 'All Listings', icon: '⊟', badge: null, badgeType: null },
       ],
     },
   ]
@@ -61,8 +62,7 @@ export default function Nav({ alertCount }: { alertCount: number }) {
     <>
       <header className="topbar">
         <div className="topbar-logo">
-          <div className="topbar-logo-dot" />
-          RafalCRM
+          <Image src="/valuenest_logo_dark.svg" alt="ValueNest" width={160} height={45} priority />
         </div>
         <nav className="topbar-nav">
           {NAV_ITEMS.map(item => (

@@ -65,6 +65,7 @@ model Listing {
   valuePln     Decimal?
   status       String   @default("active")
   daysOnMarket Int?
+  photoUrl     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

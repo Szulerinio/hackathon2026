@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" role="img" aria-labelledby="title desc">
+  <title id="title">ValueNest Real Estate CRM logo</title>
+  <desc id="desc">Gold house and growth arrow icon with ValueNest wordmark and Real Estate CRM tagline.</desc>
+  <defs>
+    <style>
+      .gold{stroke:#bda45b;fill:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+      .goldfill{fill:#bda45b}
+      .word{font-family:Inter, Avenir, Helvetica, Arial, sans-serif;font-weight:800;fill:#071426}
+      .tag{font-family:Inter, Avenir, Helvetica, Arial, sans-serif;font-weight:500;letter-spacing:.5px;fill:#8b8f97}
+    </style>
+  </defs>
+
+  <!-- icon -->
+  <g transform="translate(48 34)">
+    <!-- house outline -->
+    <path class="gold" d="M18 124 V55 L73 10 L128 55 V89"/>
+    <!-- bottom trend line -->
+    <path class="gold" d="M18 124 L55 92 L83 113 L132 64"/>
+    <!-- arrow head -->
+    <path class="gold" d="M101 64 H132 V95"/>
+    <!-- window -->
+    <rect class="goldfill" x="58" y="50" width="14" height="14" rx="2"/>
+    <rect class="goldfill" x="78" y="50" width="14" height="14" rx="2"/>
+    <rect class="goldfill" x="58" y="70" width="14" height="14" rx="2"/>
+    <rect class="goldfill" x="78" y="70" width="14" height="14" rx="2"/>
+  </g>
+
+  <!-- wordmark -->
+  <text class="word" x="218" y="103" font-size="66">ValueNest</text>
+  <text class="tag" x="221" y="150" font-size="31">Real Estate CRM</text>
+</svg>

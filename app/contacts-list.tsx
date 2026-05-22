@@ -100,57 +100,87 @@ export default function ContactsList({
         ))}
       </div>
 
-      <div className="contact-list">
-        {displayed.map(c => (
-          <Link key={c.id} href={`/contacts/${c.id}`} className="crow">
-            <div className={`av ${avatarClass(c.id)}`}>{c.initials}</div>
-            <div className="cinfo">
-              <div className="cname" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {c.displayName}
-                {c.type && (
-                  <span style={{
-                    ...typeBadgeStyle(c.type),
-                    fontSize: 9,
-                    fontWeight: 700,
-                    padding: '1px 5px',
-                    borderRadius: 6,
-                    letterSpacing: '0.04em',
-                  }}>
-                    {c.type}
-                  </span>
-                )}
-                {c.isHousehold && (
-                  <span style={{
-                    background: 'var(--surface3, #2a2a3a)',
-                    color: 'var(--text3)',
-                    fontSize: 9,
-                    fontWeight: 600,
-                    padding: '1px 5px',
-                    borderRadius: 6,
-                    letterSpacing: '0.04em',
-                  }}>
-                    {c.members.length === 1 ? '+ 1 member' : `+ ${c.members.length} members`}
-                  </span>
-                )}
+      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr 100px 140px 72px',
+          gap: 8,
+          padding: '10px 16px',
+          borderBottom: '1px solid var(--border)',
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.07em',
+          textTransform: 'uppercase',
+          color: 'var(--text3)',
+        }}>
+          <div>Name</div>
+          <div>Relationship</div>
+          <div>Type</div>
+          <div>Last contact</div>
+          <div>Status</div>
+        </div>
+
+        {displayed.map((c, i) => (
+          <Link
+            key={c.id}
+            href={`/contacts/${c.id}`}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '2fr 1fr 100px 140px 72px',
+              gap: 8,
+              padding: '11px 16px',
+              borderBottom: i < displayed.length - 1 ? '1px solid var(--border)' : 'none',
+              alignItems: 'center',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'background 0.1s',
+            }}
+            className="crow-panel"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <div className={`av ${avatarClass(c.id)}`}>{c.initials}</div>
+              <div>
+                <div className="cname" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {c.displayName}
+                  {c.isHousehold && (
+                    <span style={{
+                      background: 'var(--surface2)',
+                      color: 'var(--text3)',
+                      fontSize: 9,
+                      fontWeight: 600,
+                      padding: '1px 5px',
+                      borderRadius: 6,
+                      letterSpacing: '0.04em',
+                    }}>
+                      +{c.members.length}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="crole">{c.relationship.split(',')[0]}</div>
             </div>
+            <div className="crole">{c.relationship.split(',')[0]}</div>
+            <div>
+              {c.type && (
+                <span style={{
+                  ...typeBadgeStyle(c.type),
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: '2px 7px',
+                  borderRadius: 6,
+                }}>
+                  {c.type}
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.daysSince}d ago</div>
             <span className={`s-pill ${tierPill(c.decayTier)}`}>
               {c.decayTier === 'ok' ? 'ok' : c.decayTier}
             </span>
-            <div className="decay-wrap">
-              <div className="decay-track">
-                <div
-                  className="decay-fill"
-                  style={{ width: `${Math.min(100, c.decayScore * 1.2)}%`, background: tierColor(c.decayTier) }}
-                />
-              </div>
-              <div className="decay-days">{c.daysSince}d ago</div>
-            </div>
           </Link>
         ))}
+
         {!showAll && filtered.length > 14 && (
-          <div style={{ padding: '8px 6px', fontSize: '11px', color: 'var(--text3)' }}>
+          <div style={{ padding: '10px 16px', fontSize: '11px', color: 'var(--text3)', borderTop: '1px solid var(--border)' }}>
             +{filtered.length - 14} more — <Link href="/contacts" style={{ color: 'var(--accent-dim)', textDecoration: 'none' }}>view all</Link>
           </div>
         )}

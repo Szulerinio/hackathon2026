@@ -75,6 +75,8 @@ export type ListingCard = {
   sellerSlug: string;
   status: string;
   daysOnMarket: number;
+  photoUrl: string | null;
+  leads: { looked: number; interested: number; called: number };
 };
 
 export type DealRow = {
@@ -273,20 +275,26 @@ export const getActivitiesForContact = cache(
 
 export const getListings = cache(async (): Promise<ListingCard[]> => {
   const rows = await prisma.listing.findMany({
-    include: { owner: true },
+    include: { owner: true, deals: true },
     orderBy: { createdAt: "desc" },
   });
 
   return rows
     .map((row) => ({
-    id: row.id,
-    address: row.address ?? row.title,
-    price: row.valueDisplay ?? "",
-    sellerName: row.owner.name,
-    sellerSlug: row.owner.slug,
-    status: row.status,
-    daysOnMarket: row.daysOnMarket ?? 0,
-  }))
+      id: row.id,
+      address: row.address ?? row.title,
+      price: row.valueDisplay ?? "",
+      sellerName: row.owner.name,
+      sellerSlug: row.owner.slug,
+      status: row.status,
+      daysOnMarket: row.daysOnMarket ?? 0,
+      photoUrl: row.photoUrl ?? null,
+      leads: {
+        looked: row.deals.filter((d) => d.status === "viewing").length,
+        interested: row.deals.filter((d) => d.status === "offer").length,
+        called: row.deals.filter((d) => d.status === "negotiation").length,
+      },
+    }))
     .sort((a, b) => b.daysOnMarket - a.daysOnMarket);
 });
 

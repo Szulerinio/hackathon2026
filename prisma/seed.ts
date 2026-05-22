@@ -170,7 +170,8 @@ async function main() {
 
   const listingIdByAddress = new Map<string, number>();
 
-  for (const listing of LISTINGS) {
+  for (let i = 0; i < LISTINGS.length; i++) {
+    const listing = LISTINGS[i];
     const ownerId = await ensureContact(listing.sellerName);
     const row = await prisma.listing.create({
       data: {
@@ -181,6 +182,7 @@ async function main() {
         valuePln: parseValuePln(listing.price),
         status: listing.status,
         daysOnMarket: listing.daysOnMarket,
+        photoUrl: i < 12 ? `/listings/listing-${i + 1}.png` : null,
       },
     });
     listingIdByAddress.set(listing.address, row.id);
