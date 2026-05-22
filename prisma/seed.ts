@@ -10,7 +10,6 @@ import {
   parseTags,
 } from "../lib/derive-contact";
 import { slugify } from "../lib/decay";
-import { ALERTS, CONTACT_TYPES, DEALS, LISTINGS } from "../lib/mock-data";
 
 type CsvRow = {
   name: string;
@@ -23,16 +22,39 @@ type CsvRow = {
   notes: string;
 };
 
-const REFERRAL_LINKS: [string, string][] = [
-  ["Natalia Kwiatkowska", "Anna Krajewska"],
-  ["Beata Mazur", "Teresa Głowacka"],
-  ["Agnieszka Lis", "Karolina Nowicka"],
-];
+type SeedListing = {
+  address: string;
+  price: string;
+  sellerName: string;
+  status: string;
+  daysOnMarket: number;
+};
 
-const LIFE_EVENTS: [string, string, string][] = [
-  ["Jakub Wójcik", "2026-06-15", "Baby due (Magda)"],
-  ["Paweł Adamczyk", "2026-09-12", "Wedding day"],
-];
+type SeedDeal = {
+  buyerName: string;
+  propertyAddress: string;
+  status: string;
+  value: string;
+  lastActivityDate: string;
+};
+
+type SeedAlert = {
+  contactName: string;
+  reason: string;
+  actionLabel: string;
+  createdAt: string;
+};
+
+type SeedMeta = {
+  referralLinks: [string, string][];
+  lifeEvents: [string, string, string][];
+};
+
+const seedDataDir = join(__dirname, "seed-data");
+
+function loadJson<T>(filename: string): T {
+  return JSON.parse(readFileSync(join(seedDataDir, filename), "utf-8")) as T;
+}
 
 function parseValuePln(display: string): number | null {
   const digits = display.replace(/[^\d]/g, "");
@@ -40,7 +62,36 @@ function parseValuePln(display: string): number | null {
   return Number(digits);
 }
 
+async function deriveParticipantRoles() {
+  const contacts = await prisma.contact.findMany({
+    select: {
+      id: true,
+      ownedListings: { select: { id: true } },
+      buyerDeals: { select: { id: true } },
+    },
+  });
+
+  for (const contact of contacts) {
+    const hasListings = contact.ownedListings.length > 0;
+    const hasDeals = contact.buyerDeals.length > 0;
+    let role: string | null = null;
+    if (hasListings && hasDeals) role = "both";
+    else if (hasListings) role = "seller";
+    else if (hasDeals) role = "buyer";
+
+    await prisma.contact.update({
+      where: { id: contact.id },
+      data: { participantRole: role },
+    });
+  }
+}
+
 async function main() {
+  const LISTINGS = loadJson<SeedListing[]>("listings.json");
+  const DEALS = loadJson<SeedDeal[]>("deals.json");
+  const ALERTS = loadJson<SeedAlert[]>("alerts.json");
+  const { referralLinks, lifeEvents } = loadJson<SeedMeta>("meta.json");
+
   await prisma.alert.deleteMany();
   await prisma.deal.deleteMany();
   await prisma.listing.deleteMany();
@@ -69,7 +120,7 @@ async function main() {
         notes: row.notes || null,
         tags: JSON.stringify(tags),
         contactType: deriveContactType(tags),
-        participantRole: CONTACT_TYPES[row.name] ?? null,
+        participantRole: null,
         decayThresholdDays: deriveDecayThresholdDays(tags),
         isHousehold: deriveIsHousehold(row.name, row.relationship, tags),
       },
@@ -77,7 +128,7 @@ async function main() {
     idByName.set(row.name, contact.id);
   }
 
-  for (const [child, parent] of REFERRAL_LINKS) {
+  for (const [child, parent] of referralLinks) {
     const childId = idByName.get(child);
     const parentId = idByName.get(parent);
     if (childId && parentId) {
@@ -88,7 +139,7 @@ async function main() {
     }
   }
 
-  for (const [name, date, label] of LIFE_EVENTS) {
+  for (const [name, date, label] of lifeEvents) {
     const id = idByName.get(name);
     if (id) {
       await prisma.contact.update({
@@ -98,7 +149,7 @@ async function main() {
     }
   }
 
-  async function ensureContact(name: string, role?: string) {
+  async function ensureContact(name: string) {
     const existing = idByName.get(name);
     if (existing) return existing;
     const contact = await prisma.contact.create({
@@ -110,7 +161,7 @@ async function main() {
         context: "Synthetic contact for property listings in demo dataset.",
         tags: JSON.stringify(["past client"]),
         contactType: "past_client",
-        participantRole: role ?? CONTACT_TYPES[name] ?? "seller",
+        participantRole: null,
         decayThresholdDays: 90,
       },
     });
@@ -121,7 +172,7 @@ async function main() {
   const listingIdByAddress = new Map<string, number>();
 
   for (const listing of LISTINGS) {
-    const ownerId = await ensureContact(listing.sellerName, "seller");
+    const ownerId = await ensureContact(listing.sellerName);
     const row = await prisma.listing.create({
       data: {
         title: listing.address,
@@ -141,13 +192,13 @@ async function main() {
 
     let listingId = listingIdByAddress.get(deal.propertyAddress);
     if (!listingId) {
-      const mockListing = LISTINGS.find(
+      const matchedListing = LISTINGS.find(
         (l) =>
           deal.propertyAddress.includes(l.address.split(",")[0].trim()) ||
           l.address.includes(deal.propertyAddress.split(",")[0].trim()),
       );
-      const sellerName = mockListing?.sellerName ?? "Tomasz Wierzbicki";
-      const ownerId = await ensureContact(sellerName, "seller");
+      const sellerName = matchedListing?.sellerName ?? "Tomasz Wierzbicki";
+      const ownerId = await ensureContact(sellerName);
       const row = await prisma.listing.create({
         data: {
           title: deal.propertyAddress,
@@ -174,6 +225,8 @@ async function main() {
       },
     });
   }
+
+  await deriveParticipantRoles();
 
   for (const alert of ALERTS) {
     const contactId = idByName.get(alert.contactName);

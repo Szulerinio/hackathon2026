@@ -5,20 +5,52 @@ import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS: { href: string; label: string; icon: string }[] = []
 
-const SIDEBAR_ITEMS = [
-  { section: 'Overview', items: [
-    { href: '/', label: 'Dashboard', icon: '▤', badge: null, badgeType: null },
-    { href: '/contacts', label: 'All contacts', icon: '⊙', badge: null, badgeType: null },
-    { href: '/alerts', label: 'Alerts', icon: '◈', badge: '5', badgeType: 'red' },
-  ]},
-  { section: 'Business', items: [
-    { href: '/listings', label: 'Listings', icon: '⊟', badge: null, badgeType: null },
-    { href: '/deals', label: 'Deals', icon: '◫', badge: null, badgeType: null },
-  ]},
-]
+type SidebarItem = {
+  href: string
+  label: string
+  icon: string
+  badge: string | null
+  badgeType: 'red' | 'amber' | null
+}
 
-export default function Nav() {
+function buildSidebarItems(alertCount: number): { section: string; items: SidebarItem[] }[] {
+  return [
+    {
+      section: 'Overview',
+      items: [
+        { href: '/', label: 'Dashboard', icon: '▤', badge: null, badgeType: null },
+        { href: '/contacts', label: 'All contacts', icon: '⊙', badge: null, badgeType: null },
+        {
+          href: '/alerts',
+          label: 'Alerts',
+          icon: '◈',
+          badge: alertCount > 0 ? String(alertCount) : null,
+          badgeType: 'red',
+        },
+      ],
+    },
+    {
+      section: 'Business',
+      items: [
+        { href: '/listings', label: 'Listings', icon: '⊟', badge: null, badgeType: null },
+        { href: '/deals', label: 'Deals', icon: '◫', badge: null, badgeType: null },
+      ],
+    },
+  ]
+}
+
+function formatDateChip(): string {
+  return new Date().toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+export default function Nav({ alertCount }: { alertCount: number }) {
   const pathname = usePathname()
+  const sidebarItems = buildSidebarItems(alertCount)
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -27,7 +59,6 @@ export default function Nav() {
 
   return (
     <>
-      {/* Topbar */}
       <header className="topbar">
         <div className="topbar-logo">
           <div className="topbar-logo-dot" />
@@ -45,14 +76,13 @@ export default function Nav() {
           ))}
         </nav>
         <div className="topbar-right">
-          <span className="date-chip">Fri, May 22 2026</span>
+          <span className="date-chip">{formatDateChip()}</span>
           <div className="avatar-top">RW</div>
         </div>
       </header>
 
-      {/* Sidebar */}
       <aside className="sidebar">
-        {SIDEBAR_ITEMS.map(group => (
+        {sidebarItems.map(group => (
           <div key={group.section}>
             <div className="sec-label">{group.section}</div>
             {group.items.map(item => (

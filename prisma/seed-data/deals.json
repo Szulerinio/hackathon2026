@@ -1,0 +1,37 @@
+[
+  {
+    "buyerName": "Marek Kowalski",
+    "propertyAddress": "ul. Dietla 18/7, Kraków",
+    "status": "offer",
+    "value": "420 000 PLN",
+    "lastActivityDate": "2026-05-20"
+  },
+  {
+    "buyerName": "Ewa Szymańska",
+    "propertyAddress": "ul. Kazimierza Wielkiego 5, Kraków",
+    "status": "negotiation",
+    "value": "600 000 PLN",
+    "lastActivityDate": "2026-05-18"
+  },
+  {
+    "buyerName": "Anna Krajewska",
+    "propertyAddress": "ul. Piłsudskiego 22/3, Kraków",
+    "status": "viewing",
+    "value": "1 200 000 PLN",
+    "lastActivityDate": "2026-05-21"
+  },
+  {
+    "buyerName": "Szymon Kaczmarek",
+    "propertyAddress": "ul. Starowiślna 12/4, Kraków",
+    "status": "viewing",
+    "value": "380 000 PLN",
+    "lastActivityDate": "2026-05-15"
+  },
+  {
+    "buyerName": "Beata Mazur",
+    "propertyAddress": "ul. Kościuszki 8/2, Kraków",
+    "status": "closed",
+    "value": "490 000 PLN",
+    "lastActivityDate": "2026-04-30"
+  }
+]

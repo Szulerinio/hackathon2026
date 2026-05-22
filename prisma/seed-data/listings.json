@@ -1,0 +1,51 @@
+[
+  {
+    "address": "ul. Sienkiewicza 12/4, Kraków",
+    "price": "850 000 PLN",
+    "sellerName": "Beata Mazur",
+    "status": "active",
+    "daysOnMarket": 45
+  },
+  {
+    "address": "ul. Lipowa 33/2, Kraków",
+    "price": "560 000 PLN",
+    "sellerName": "Agnieszka Lis",
+    "status": "active",
+    "daysOnMarket": 23
+  },
+  {
+    "address": "ul. Długa 7/3, Kraków",
+    "price": "620 000 PLN",
+    "sellerName": "Karolina Wiśniewska",
+    "status": "active",
+    "daysOnMarket": 12
+  },
+  {
+    "address": "ul. Kazimierza Wielkiego 5, Kraków",
+    "price": "1 200 000 PLN",
+    "sellerName": "Janusz Wiśniewski",
+    "status": "active",
+    "daysOnMarket": 8
+  },
+  {
+    "address": "ul. Bronowicka 44/1, Kraków",
+    "price": "430 000 PLN",
+    "sellerName": "Marta Jabłońska",
+    "status": "sold",
+    "daysOnMarket": 91
+  },
+  {
+    "address": "ul. Podchorążych 3, Kraków",
+    "price": "780 000 PLN",
+    "sellerName": "Henryk Dąbrowski",
+    "status": "withdrawn",
+    "daysOnMarket": 67
+  },
+  {
+    "address": "ul. Starowiślna 22/8, Kraków",
+    "price": "495 000 PLN",
+    "sellerName": "Tomasz Wierzbicki",
+    "status": "active",
+    "daysOnMarket": 31
+  }
+]

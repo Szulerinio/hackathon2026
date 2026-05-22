@@ -10,28 +10,31 @@ A relationship management tool tailored to a real estate agent's network. It sur
 
 ```bash
 pnpm install
+pnpm db:seed
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-> The app reads from `../dataset-rafal.csv` (one level above `my-app/`). Keep that file in place while on CSV.
-
 ## Routes
 
 | Route | Description |
 |---|---|
-| `/` | Dashboard — metrics, contact list, AI alerts, deals, promises |
-| `/contacts/[id]` | Contact detail — 4 layout variants (toggle via `?layout=a/b/c/d`) |
+| `/` | Dashboard — metrics, today strip, recent alerts |
+| `/contacts` | All contacts with filters and search |
+| `/contacts/[id]` | Contact detail — listings/deals when linked |
+| `/listings` | Property listings |
+| `/deals` | Buyer deals |
+| `/alerts` | AI-generated alerts |
 | `/chat` | AI feature placeholder |
 
 ## Data layer
 
-Data lives in SQLite (`dev.db`) via Prisma: `contacts`, `listings` (property + owner), `deals` (listing + buyer, status open/closed/listing/…), `alerts`. Access through `lib/data.ts`; seed with `pnpm db:seed`.
+All runtime data comes from SQLite (`dev.db`) via Prisma: `contacts`, `listings`, `deals`, `alerts`. Read through [`lib/crm.ts`](lib/crm.ts). Seed with `pnpm db:seed` (contacts from `dataset-rafal.csv`, demo listings/deals/alerts from `prisma/seed-data/`).
 
 ## Stack
 
 - Next.js 16 (App Router)
 - Tailwind CSS v4
 - TypeScript
-- Data: SQLite (Prisma) — contacts, listings, deals, alerts
+- SQLite (Prisma) + better-sqlite3

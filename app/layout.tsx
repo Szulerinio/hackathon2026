@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Syne, Instrument_Sans } from 'next/font/google'
 import './globals.css'
 import Nav from './nav'
+import { getActiveAlertCount } from '../lib/crm'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -20,12 +21,14 @@ export const metadata: Metadata = {
   description: 'Personal CRM for Rafał',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const alertCount = await getActiveAlertCount()
+
   return (
     <html lang="en" className={`${syne.variable} ${instrumentSans.variable}`}>
       <body>
         <div className="shell">
-          <Nav />
+          <Nav alertCount={alertCount} />
           <main className="main-area">{children}</main>
         </div>
       </body>

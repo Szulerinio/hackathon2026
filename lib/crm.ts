@@ -218,6 +218,10 @@ export const getDealsForContact = cache(
   },
 );
 
+export const getActiveAlertCount = cache(async (): Promise<number> => {
+  return prisma.alert.count({ where: { isActive: true } });
+});
+
 export const getAlerts = cache(async (): Promise<Alert[]> => {
   const rows = await prisma.alert.findMany({
     where: { isActive: true },

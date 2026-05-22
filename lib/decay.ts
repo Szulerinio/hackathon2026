@@ -1,4 +1,11 @@
-export const CRM_TODAY = new Date("2026-05-22");
+/** Override with CRM_TODAY=YYYY-MM-DD for frozen demo dates. */
+export function getCrmToday(): Date {
+  const override = process.env.CRM_TODAY;
+  if (override) return new Date(`${override}T12:00:00`);
+  return new Date();
+}
+
+export const CRM_TODAY = getCrmToday();
 
 const THRESHOLDS: Record<string, number> = {
   "active client": 7,
@@ -49,12 +56,12 @@ export function formatDate(d: string | Date | null | undefined): string {
   return String(d).slice(0, 10);
 }
 
-export function computeDaysSince(dateStr: string): number {
+export function computeDaysSince(dateStr: string, today = getCrmToday()): number {
   if (!dateStr) return 0;
   const date = new Date(dateStr);
   return Math.max(
     0,
-    Math.floor((CRM_TODAY.getTime() - date.getTime()) / 86400000),
+    Math.floor((today.getTime() - date.getTime()) / 86400000),
   );
 }
 
