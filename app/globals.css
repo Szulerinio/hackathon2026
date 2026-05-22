@@ -85,7 +85,7 @@ html, body {
 .shell {
   display: grid;
   grid-template-columns: var(--sidebar) 1fr;
-  grid-template-rows: var(--topbar) 1fr;
+  grid-template-rows: var(--topbar) minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
 }
@@ -253,13 +253,42 @@ html, body {
 }
 .ai-chat-btn:hover { background: rgba(200,241,53,0.19); }
 
-/* Main content area */
+/* Main content area — min-height: 0 lets the grid cell shrink so overflow-y scrolls */
 .main-area {
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  max-height: 100%;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* Contacts table — scroll rows inside panel, sticky column headers */
+.contacts-table-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(720px, calc(100vh - var(--topbar) - 220px));
+}
+
+.contacts-table-head {
+  flex-shrink: 0;
+}
+
+.contacts-table-body {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.contacts-table-foot {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-size: 11px;
+  color: var(--text3);
+  border-top: 1px solid var(--border);
 }
 
 /* Page header */

@@ -4,6 +4,7 @@ import type {
   HouseholdMember as DbHouseholdMember,
   ActivityEvent as DbActivityEvent,
 } from "@/app/generated/prisma/client";
+import { resolveListingPhotoUrl } from "./listing-photos";
 import { prisma } from "./prisma";
 import { avatarClass } from "./avatar";
 import {
@@ -76,7 +77,7 @@ export type ListingCard = {
   sellerSlug: string;
   status: string;
   daysOnMarket: number;
-  photoUrl: string | null;
+  photoUrl: string;
   leads: { looked: number; interested: number; called: number };
 };
 
@@ -311,7 +312,7 @@ export const getListings = cache(async (): Promise<ListingCard[]> => {
       sellerSlug: row.owner.slug,
       status: row.status,
       daysOnMarket: row.daysOnMarket ?? 0,
-      photoUrl: row.photoUrl ?? null,
+      photoUrl: resolveListingPhotoUrl(row.id, row.photoUrl),
       leads: {
         looked: row.deals.filter((d) => d.status === "viewing").length,
         interested: row.deals.filter((d) => d.status === "offer").length,

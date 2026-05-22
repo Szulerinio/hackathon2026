@@ -100,8 +100,10 @@ export default function ContactsList({
         ))}
       </div>
 
-      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{
+      <div className="panel contacts-table-panel" style={{ padding: 0 }}>
+        <div
+          className="contacts-table-head"
+          style={{
           display: 'grid',
           gridTemplateColumns: '2fr 80px 1fr 76px 1fr 80px 100px',
           gap: 8,
@@ -112,7 +114,8 @@ export default function ContactsList({
           letterSpacing: '0.07em',
           textTransform: 'uppercase',
           color: 'var(--text3)',
-        }}>
+        }}
+        >
           <div>Name</div>
           <div>Type</div>
           <div>Relationship</div>
@@ -122,6 +125,7 @@ export default function ContactsList({
           <div>Last contact</div>
         </div>
 
+        <div className="contacts-table-body">
         {displayed.map((c, i) => (
           <Link
             key={c.id}
@@ -167,12 +171,22 @@ export default function ContactsList({
             <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.daysSince}d ago</div>
           </Link>
         ))}
+        </div>
 
-        {!showAll && filtered.length > 14 && (
-          <div style={{ padding: '10px 16px', fontSize: '11px', color: 'var(--text3)', borderTop: '1px solid var(--border)' }}>
-            +{filtered.length - 14} more — <Link href="/contacts" style={{ color: 'var(--accent-dim)', textDecoration: 'none' }}>view all</Link>
-          </div>
-        )}
+        <div className="contacts-table-foot">
+          {showAll ? (
+            <>Showing {displayed.length} of {contacts.length} contacts</>
+          ) : filtered.length > 14 ? (
+            <>
+              Showing 14 of {filtered.length} —{' '}
+              <Link href="/contacts" style={{ color: 'var(--accent-dim)', textDecoration: 'none' }}>
+                view all
+              </Link>
+            </>
+          ) : (
+            <>Showing {displayed.length} contact{displayed.length === 1 ? '' : 's'}</>
+          )}
+        </div>
       </div>
     </>
   )

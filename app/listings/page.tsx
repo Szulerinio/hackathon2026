@@ -61,30 +61,15 @@ export default async function ListingsPage({
             style={{ cursor: 'default', display: 'flex', flexDirection: 'column', gap: 10 }}
           >
             <div style={{ borderRadius: 'var(--r-sm)', height: 160, overflow: 'visible', position: 'relative', flexShrink: 0 }}>
-              {l.photoUrl ? (
-                <div style={{ borderRadius: 'var(--r-sm)', overflow: 'hidden', position: 'absolute', inset: 0 }}>
-                  <Image
-                    src={l.photoUrl}
-                    alt={l.address}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-              ) : (
-                <div style={{
-                  position: 'absolute', inset: 0, borderRadius: 'var(--r-sm)',
-                  background: 'linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 6, color: 'var(--text3)',
-                }}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                  </svg>
-                  <span style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>No photo</span>
-                </div>
-              )}
+              <div style={{ borderRadius: 'var(--r-sm)', overflow: 'hidden', position: 'absolute', inset: 0 }}>
+                <Image
+                  src={l.photoUrl}
+                  alt={l.address}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
               <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
                 <EditListingModal listing={l} sellers={sellers} />
               </div>
