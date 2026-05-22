@@ -6,7 +6,6 @@ import { prisma } from "../lib/prisma";
 import {
   deriveContactType,
   deriveDecayThresholdDays,
-  deriveIsHousehold,
   parseTags,
 } from "../lib/derive-contact";
 import { slugify } from "../lib/decay";
@@ -95,6 +94,7 @@ async function main() {
   await prisma.alert.deleteMany();
   await prisma.deal.deleteMany();
   await prisma.listing.deleteMany();
+  await prisma.householdMember.deleteMany();
   await prisma.contact.deleteMany();
 
   const csvPath = join(__dirname, "../dataset-rafal.csv");
@@ -122,7 +122,6 @@ async function main() {
         contactType: deriveContactType(tags),
         participantRole: null,
         decayThresholdDays: deriveDecayThresholdDays(tags),
-        isHousehold: deriveIsHousehold(row.name, row.relationship, tags),
       },
     });
     idByName.set(row.name, contact.id);
@@ -224,6 +223,49 @@ async function main() {
         lastActivityDate: deal.lastActivityDate,
       },
     });
+  }
+
+  const householdSeeds: {
+    contactName: string;
+    members: { name: string; phone?: string; email?: string; role?: string; note?: string }[];
+  }[] = [
+    {
+      contactName: "Paweł Adamczyk",
+      members: [
+        { name: "Iga Adamczyk", role: "fiancée", note: "Nurse. Co-decision-maker, equally involved in apartment search. Wedding September 12." },
+      ],
+    },
+    {
+      contactName: "Natalia Kwiatkowska",
+      members: [
+        { name: "Olek", role: "partner", note: "Works at Kraków Technology Park. Concerned about commute times." },
+      ],
+    },
+    {
+      contactName: "Marek Kowalski",
+      members: [
+        { name: "Bożena Kowalska", role: "spouse", note: "Skeptical about real estate investing. Worth addressing her concerns directly." },
+      ],
+    },
+    {
+      contactName: "Stefan Fischer",
+      members: [
+        { name: "Julia Fischer", role: "spouse", note: "Baby daughter. May relocate back to Stuttgart — timing affects investment decisions." },
+      ],
+    },
+  ];
+
+  for (const seed of householdSeeds) {
+    const contactId = idByName.get(seed.contactName);
+    if (!contactId) {
+      console.warn(`Skipping members — contact not found: ${seed.contactName}`);
+      continue;
+    }
+    for (const member of seed.members) {
+      await prisma.householdMember.create({
+        data: { contactId, ...member },
+      });
+    }
   }
 
   await deriveParticipantRoles();

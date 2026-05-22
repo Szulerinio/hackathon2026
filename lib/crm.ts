@@ -1,5 +1,8 @@
 import { cache } from "react";
-import type { Contact as DbContact } from "@/app/generated/prisma/client";
+import type {
+  Contact as DbContact,
+  HouseholdMember as DbHouseholdMember,
+} from "@/app/generated/prisma/client";
 import { prisma } from "./prisma";
 import { avatarClass } from "./avatar";
 import {
@@ -12,9 +15,19 @@ import {
 
 export type ParticipantRole = "seller" | "buyer" | "both";
 
+export type HouseholdMember = {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  note: string;
+  role: string;
+};
+
 export type Contact = {
   id: string;
   name: string;
+  displayName: string;
   relationship: string;
   source: string;
   context: string;
@@ -27,6 +40,7 @@ export type Contact = {
   decayScore: number;
   decayTier: DecayTier;
   isHousehold: boolean;
+  members: HouseholdMember[];
   type: ParticipantRole | null;
   phone: string;
   email: string;
@@ -126,17 +140,32 @@ function parseParticipantRole(
   return null;
 }
 
-function mapContact(row: DbContact): Contact {
+type DbContactWithMembers = DbContact & { members: DbHouseholdMember[] };
+
+function mapMember(m: DbHouseholdMember): HouseholdMember {
+  return {
+    id: m.id,
+    name: m.name,
+    phone: m.phone ?? "",
+    email: m.email ?? "",
+    note: m.note ?? "",
+    role: m.role ?? "",
+  };
+}
+
+function mapContact(row: DbContactWithMembers): Contact {
   const tags = parseTagsJson(row.tags);
   const lastInteractionDate = formatDate(row.lastInteractionDate);
   const decay = computeDecayWithThreshold(
     lastInteractionDate,
     row.decayThresholdDays,
   );
+  const members = row.members.map(mapMember);
 
   return {
     id: row.slug,
     name: row.name,
+    displayName: row.displayName ?? row.name,
     relationship: row.relationship ?? "",
     source: row.source ?? "",
     context: row.context ?? "",
@@ -148,21 +177,30 @@ function mapContact(row: DbContact): Contact {
     daysSince: decay.days,
     decayScore: decay.score,
     decayTier: decay.tier,
-    isHousehold: row.isHousehold,
+    isHousehold: members.length > 0,
+    members,
     type: parseParticipantRole(row.participantRole),
     phone: row.phone ?? "",
     email: row.email ?? "",
   };
 }
 
+const memberInclude = { members: { orderBy: { createdAt: "asc" as const } } };
+
 export const getContacts = cache(async (): Promise<Contact[]> => {
-  const rows = await prisma.contact.findMany({ orderBy: { name: "asc" } });
+  const rows = await prisma.contact.findMany({
+    orderBy: { name: "asc" },
+    include: memberInclude,
+  });
   return rows.map(mapContact);
 });
 
 export const getContact = cache(
   async (id: string): Promise<Contact | undefined> => {
-    const row = await prisma.contact.findUnique({ where: { slug: id } });
+    const row = await prisma.contact.findUnique({
+      where: { slug: id },
+      include: memberInclude,
+    });
     return row ? mapContact(row) : undefined;
   },
 );

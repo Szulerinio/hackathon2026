@@ -7,6 +7,7 @@ import {
   getListingsForContact,
 } from '../../../lib/crm'
 import EditContactModal from '../edit-contact-modal'
+import HouseholdMembers from './household-members'
 
 function DecayPill({ tier, days }: { tier: string; days: number }) {
   const cls = tier === 'urgent' ? 's-red' : tier === 'warning' ? 's-amber' : tier === 'watch' ? 's-blue' : 's-green'
@@ -73,7 +74,7 @@ export default async function ContactDetailPage({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 10, paddingBottom: 14, borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
               <div className={`contact-avatar ${avClass}`} style={{ width: 52, height: 52, fontSize: 16 }}>{contact.initials}</div>
               <div>
-                <div className="contact-name" style={{ fontSize: 18 }}>{contact.name}</div>
+                <div className="contact-name" style={{ fontSize: 18 }}>{contact.displayName}</div>
                 <div className="contact-role">{contact.relationship.split(',')[0]}</div>
               </div>
               {contact.type && (
@@ -124,6 +125,8 @@ export default async function ContactDetailPage({
               <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{contact.notes}</div>
             </div>
           )}
+
+          <HouseholdMembers members={contact.members} slug={contact.id} />
 
           {isSeller && (
             <div className="panel fade-up">

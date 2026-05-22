@@ -11,6 +11,7 @@ model Contact {
   id                     Int       @id @default(autoincrement())
   slug                   String    @unique
   name                   String
+  displayName            String?
   relationship           String?
   source                 String?
   context                String?
@@ -21,10 +22,8 @@ model Contact {
   contactType            String?
   participantRole        String?
   decayThresholdDays     Int       @default(180)
-  isHousehold            Boolean   @default(false)
   phone                  String?
   email                  String?
-  householdMembers       String?
   city                   String?
   referredById           Int?
   referredBy             Contact?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
@@ -36,9 +35,22 @@ model Contact {
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
-  ownedListings Listing[] @relation("ListingOwner")
-  buyerDeals    Deal[]    @relation("DealBuyer")
-  alerts        Alert[]
+  ownedListings    Listing[]         @relation("ListingOwner")
+  buyerDeals       Deal[]            @relation("DealBuyer")
+  alerts           Alert[]
+  members          HouseholdMember[]
+}
+
+model HouseholdMember {
+  id        Int     @id @default(autoincrement())
+  contactId Int
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String?
+  email     String?
+  note      String?
+  role      String?
+  createdAt DateTime @default(now())
 }
 
 model Listing {

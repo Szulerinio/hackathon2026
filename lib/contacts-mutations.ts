@@ -1,7 +1,6 @@
 import {
   deriveContactType,
   deriveDecayThresholdDays,
-  deriveIsHousehold,
 } from "./derive-contact";
 import { formatDate, getCrmToday, slugify } from "./decay";
 import { prisma } from "./prisma";
@@ -64,11 +63,6 @@ export async function createContact(
       contactType: deriveContactType(tags),
       participantRole: input.participantRole ?? null,
       decayThresholdDays: deriveDecayThresholdDays(tags),
-      isHousehold: deriveIsHousehold(
-        name,
-        relationship ?? "",
-        tags,
-      ),
       lastInteractionDate,
       lastInteractionSummary: emptyToNull(input.lastInteractionSummary),
     },
@@ -106,11 +100,6 @@ export async function updateContact(
       contactType: deriveContactType(tags),
       participantRole: input.participantRole ?? null,
       decayThresholdDays: deriveDecayThresholdDays(tags),
-      isHousehold: deriveIsHousehold(
-        name,
-        relationship ?? "",
-        tags,
-      ),
       lastInteractionDate,
       lastInteractionSummary: emptyToNull(input.lastInteractionSummary),
     },

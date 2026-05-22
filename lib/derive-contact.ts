@@ -54,16 +54,4 @@ export function deriveDecayThresholdDays(tags: string[]): number {
   return threshold;
 }
 
-export function deriveIsHousehold(
-  name: string,
-  relationship: string,
-  tags: string[],
-): boolean {
-  const hay = `${name} ${relationship} ${tags.join(" ")}`.toLowerCase();
-  return (
-    hay.includes("couple") ||
-    hay.includes("household") ||
-    hay.includes(" + ") ||
-    (/\band\b/.test(hay) && (hay.includes("family") || name.includes(" + ")))
-  );
-}
+

@@ -13,11 +13,13 @@ const FILTERS = [
   { key: 'past client', label: 'Past' },
   { key: 'seller', label: 'Sellers' },
   { key: 'buyer', label: 'Buyers' },
+  { key: 'household', label: 'Households' },
 ]
 
 const AV_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5']
 
-function avatarClass(id: string) {
+function avatarClass(id: string | undefined) {
+  if (!id) return AV_COLORS[0]
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
   return AV_COLORS[h % AV_COLORS.length]
@@ -47,6 +49,7 @@ function matchesFilter(c: Contact, activeFilter: string): boolean {
   if (activeFilter === 'all') return true
   if (activeFilter === 'seller') return c.type === 'seller' || c.type === 'both'
   if (activeFilter === 'buyer') return c.type === 'buyer' || c.type === 'both'
+  if (activeFilter === 'household') return c.isHousehold
   return c.tags.some(t => t.toLowerCase() === activeFilter)
 }
 
@@ -63,7 +66,8 @@ export default function ContactsList({
   const filtered = contacts
     .filter(c => {
       const q = query.toLowerCase()
-      const matchQuery = !q || c.name.toLowerCase().includes(q) || c.relationship.toLowerCase().includes(q) || c.notes.toLowerCase().includes(q)
+      const matchesMembers = c.members.some(m => m.name.toLowerCase().includes(q))
+      const matchQuery = !q || c.name.toLowerCase().includes(q) || c.relationship.toLowerCase().includes(q) || c.notes.toLowerCase().includes(q) || matchesMembers
       return matchesFilter(c, activeFilter) && matchQuery
     })
     .sort((a, b) => b.decayScore - a.decayScore)
@@ -102,7 +106,7 @@ export default function ContactsList({
             <div className={`av ${avatarClass(c.id)}`}>{c.initials}</div>
             <div className="cinfo">
               <div className="cname" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {c.name}
+                {c.displayName}
                 {c.type && (
                   <span style={{
                     ...typeBadgeStyle(c.type),
@@ -113,6 +117,19 @@ export default function ContactsList({
                     letterSpacing: '0.04em',
                   }}>
                     {c.type}
+                  </span>
+                )}
+                {c.isHousehold && (
+                  <span style={{
+                    background: 'var(--surface3, #2a2a3a)',
+                    color: 'var(--text3)',
+                    fontSize: 9,
+                    fontWeight: 600,
+                    padding: '1px 5px',
+                    borderRadius: 6,
+                    letterSpacing: '0.04em',
+                  }}>
+                    {c.members.length === 1 ? '+ 1 member' : `+ ${c.members.length} members`}
                   </span>
                 )}
               </div>
