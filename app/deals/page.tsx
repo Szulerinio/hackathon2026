@@ -1,15 +1,7 @@
 import Link from 'next/link'
 import { getContacts, getDeals, getListings } from '../../lib/crm'
 import AddDealModal from './add-deal-modal'
-import EditDealModal from './edit-deal-modal'
-
-function statusPill(status: string) {
-  if (status === 'viewing') return 's-blue'
-  if (status === 'offer') return 's-amber'
-  if (status === 'negotiation') return 's-red'
-  if (status === 'closed') return 's-green'
-  return 's-dim'
-}
+import DealRow from './deal-row'
 
 const ACTIVE_STATUSES = ['viewing', 'offer', 'negotiation']
 
@@ -85,34 +77,13 @@ export default async function DealsPage({
         </div>
 
         {deals.map((d, i) => (
-          <div
+          <DealRow
             key={d.id}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr 100px 120px 90px 72px',
-              gap: 8,
-              padding: '12px 16px',
-              borderBottom: i < deals.length - 1 ? '1px solid var(--border)' : 'none',
-              alignItems: 'center',
-            }}
-          >
-            <Link
-              href={`/contacts/${d.buyerSlug}`}
-              style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', textDecoration: 'none' }}
-            >
-              {d.buyerName}
-            </Link>
-            <Link
-              href={`/deals/${d.id}`}
-              style={{ fontSize: 12, color: 'var(--text2)', textDecoration: 'none' }}
-            >
-              {d.propertyAddress}
-            </Link>
-            <span className={`s-pill ${statusPill(d.status)}`}>{d.status}</span>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-dim)' }}>{d.value}</div>
-            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{d.lastActivityDate}</div>
-            <EditDealModal deal={d} buyers={buyers} listings={listingOptions} />
-          </div>
+            deal={d}
+            buyers={buyers}
+            listings={listingOptions}
+            isLast={i === deals.length - 1}
+          />
         ))}
       </div>
     </>

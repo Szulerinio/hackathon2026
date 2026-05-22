@@ -574,6 +574,7 @@ html, body {
 }
 .deal-row:last-child { border-bottom: none; }
 .deal-row:hover { background: var(--surface2); }
+.deal-grid-row:hover { background: var(--surface2); }
 .deal-info { flex: 1; min-width: 0; }
 .deal-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .deal-person { font-size: 10px; color: var(--text3); }
