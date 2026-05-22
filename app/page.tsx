@@ -1,5 +1,11 @@
 import Link from 'next/link'
-import { getAlertFeed, getContacts, getDeals, getListings } from '../lib/crm'
+import {
+  getAlertFeed,
+  getContacts,
+  getDeals,
+  getListings,
+  toTodayStripItems,
+} from '../lib/crm'
 
 export default async function DashboardPage() {
   const [contacts, listings, deals, alerts] = await Promise.all([
@@ -11,6 +17,7 @@ export default async function DashboardPage() {
 
   const activeListings = listings.filter(l => l.status === 'active').length
   const activeDeals = deals.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
+  const todayItems = toTodayStripItems(alerts)
   const topAlerts = alerts.slice(0, 4)
 
   return (
@@ -29,9 +36,19 @@ export default async function DashboardPage() {
       <div className="today-strip">
         <div className="today-label">Today</div>
         <div className="today-items">
-          <div className="today-item">⚠ <strong>Anna K</strong> waiting for CEO apartment options since last week</div>
-          <div className="today-item">📞 <strong>Marek K</strong> viewings today — bring rental yield comparison</div>
-          <div className="today-item">📄 <strong>Piotr Z</strong> flagged Paweł Adamczyk&apos;s Credit Agricole case needs a workaround</div>
+          {todayItems.length === 0 ? (
+            <div className="today-item" style={{ color: 'var(--text3)' }}>No urgent items — you&apos;re caught up</div>
+          ) : (
+            todayItems.map(item => (
+              <div key={item.id} className="today-item">
+                {item.icon}{' '}
+                <Link href={`/contacts/${item.contactSlug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <strong>{item.shortName}</strong>
+                </Link>{' '}
+                {item.summary}
+              </div>
+            ))
+          )}
         </div>
       </div>
 

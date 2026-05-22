@@ -59,6 +59,38 @@ export type AlertFeedItem = {
   createdAt: string;
 };
 
+export type TodayStripItem = {
+  id: number;
+  icon: string;
+  shortName: string;
+  contactSlug: string;
+  summary: string;
+};
+
+function shortContactName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? name;
+  return `${parts[0]} ${parts[parts.length - 1][0]}`;
+}
+
+function todayIconForAction(action: string): string {
+  const key = action.toLowerCase();
+  if (key.includes("call") || key.includes("prepare")) return "📞";
+  if (key.includes("follow")) return "⚠";
+  return "📄";
+}
+
+export function toTodayStripItems(alerts: AlertFeedItem[]): TodayStripItem[] {
+  return alerts.slice(0, 3).map((alert) => ({
+    id: alert.id,
+    icon: todayIconForAction(alert.actionLabel),
+    shortName: shortContactName(alert.contactName),
+    contactSlug: alert.contactSlug,
+    summary:
+      alert.reason.length > 95 ? `${alert.reason.slice(0, 95)}…` : alert.reason,
+  }));
+}
+
 export type Alert = {
   id: number;
   contactId: string;
