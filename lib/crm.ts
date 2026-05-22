@@ -103,6 +103,14 @@ export type AlertFeedItem = {
   createdAt: string;
 };
 
+export type MyTaskFeedItem = {
+  id: number;
+  title: string;
+  dueDate: string;
+  contactName: string;
+  contactSlug: string;
+};
+
 export type TodayStripItem = {
   id: number;
   icon: string;
@@ -459,7 +467,7 @@ function compareAlertDueDates(a: string, b: string): number {
 
 export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
   const rows = await prisma.alert.findMany({
-    where: { isActive: true },
+    where: { isActive: true, source: { not: "manual" } },
     include: { contact: true },
     orderBy: { generatedAt: "desc" },
   });
@@ -478,6 +486,28 @@ export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
 
   items.sort((a, b) => compareAlertDueDates(a.dueDate, b.dueDate));
   return items;
+});
+
+export const getMyTasksFeed = cache(async (): Promise<MyTaskFeedItem[]> => {
+  const rows = await prisma.alert.findMany({
+    where: { isActive: true, source: "manual" },
+    include: { contact: true },
+  });
+
+  return rows
+    .map((row) => ({
+      id: row.id,
+      title: row.reason,
+      dueDate: formatDate(row.dueDate),
+      contactName: row.contact.name,
+      contactSlug: row.contact.slug,
+    }))
+    .sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return a.dueDate.localeCompare(b.dueDate);
+    });
 });
 
 export { slugify };
