@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { getDeals } from '../../lib/crm'
+import { getContacts, getDeals, getListings } from '../../lib/crm'
+import AddDealModal from './add-deal-modal'
+import EditDealModal from './edit-deal-modal'
 
 function statusPill(status: string) {
   if (status === 'viewing') return 's-blue'
@@ -10,8 +12,18 @@ function statusPill(status: string) {
 }
 
 export default async function DealsPage() {
-  const deals = await getDeals()
+  const [deals, contacts, listings] = await Promise.all([
+    getDeals(),
+    getContacts(),
+    getListings(),
+  ])
   const activeCount = deals.filter(d => ['viewing', 'offer', 'negotiation'].includes(d.status)).length
+  const buyers = contacts
+    .map((c) => ({ slug: c.id, name: c.name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+  const listingOptions = listings
+    .map((l) => ({ id: l.id, address: l.address }))
+    .sort((a, b) => a.address.localeCompare(b.address))
 
   return (
     <>
@@ -20,12 +32,13 @@ export default async function DealsPage() {
           <div className="page-title">Deals</div>
           <div className="page-sub">{activeCount} active · {deals.length} total</div>
         </div>
+        <AddDealModal buyers={buyers} listings={listingOptions} />
       </div>
 
       <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 100px 120px 90px',
+          gridTemplateColumns: '1fr 1fr 100px 120px 90px 72px',
           gap: 8,
           padding: '10px 16px',
           borderBottom: '1px solid var(--border)',
@@ -40,6 +53,7 @@ export default async function DealsPage() {
           <div>Status</div>
           <div>Value</div>
           <div>Last activity</div>
+          <div />
         </div>
 
         {deals.map((d, i) => (
@@ -47,7 +61,7 @@ export default async function DealsPage() {
             key={d.id}
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr 100px 120px 90px',
+              gridTemplateColumns: '1fr 1fr 100px 120px 90px 72px',
               gap: 8,
               padding: '12px 16px',
               borderBottom: i < deals.length - 1 ? '1px solid var(--border)' : 'none',
@@ -64,6 +78,7 @@ export default async function DealsPage() {
             <span className={`s-pill ${statusPill(d.status)}`}>{d.status}</span>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-dim)' }}>{d.value}</div>
             <div style={{ fontSize: 11, color: 'var(--text3)' }}>{d.lastActivityDate}</div>
+            <EditDealModal deal={d} buyers={buyers} listings={listingOptions} />
           </div>
         ))}
       </div>

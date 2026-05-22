@@ -58,6 +58,7 @@ export type ListingCard = {
 
 export type DealRow = {
   id: number;
+  listingId: number;
   buyerName: string;
   buyerSlug: string;
   propertyAddress: string;
@@ -243,6 +244,7 @@ export const getDeals = cache(async (): Promise<DealRow[]> => {
   return rows
     .map((row) => ({
     id: row.id,
+    listingId: row.listingId,
     buyerName: row.buyer?.name ?? "—",
     buyerSlug: row.buyer?.slug ?? "",
     propertyAddress: row.listing.address ?? row.listing.title,
