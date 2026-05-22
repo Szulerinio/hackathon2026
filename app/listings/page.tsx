@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { getListings } from '../../lib/crm'
+import { getContacts, getListings } from '../../lib/crm'
+import AddListingModal from './add-listing-modal'
+import EditListingModal from './edit-listing-modal'
 
 function statusPill(status: string) {
   if (status === 'active') return 's-green'
@@ -8,8 +10,11 @@ function statusPill(status: string) {
 }
 
 export default async function ListingsPage() {
-  const listings = await getListings()
+  const [listings, contacts] = await Promise.all([getListings(), getContacts()])
   const activeCount = listings.filter(l => l.status === 'active').length
+  const sellers = contacts
+    .map((c) => ({ slug: c.id, name: c.name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   return (
     <>
@@ -18,6 +23,7 @@ export default async function ListingsPage() {
           <div className="page-title">Listings</div>
           <div className="page-sub">{activeCount} active · {listings.length} total</div>
         </div>
+        <AddListingModal sellers={sellers} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
@@ -46,9 +52,12 @@ export default async function ListingsPage() {
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.4 }}>
                   {l.address}
                 </div>
-                <span className={`s-pill ${statusPill(l.status)}`} style={{ flexShrink: 0, marginTop: 1 }}>
-                  {l.status}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <span className={`s-pill ${statusPill(l.status)}`} style={{ marginTop: 1 }}>
+                    {l.status}
+                  </span>
+                  <EditListingModal listing={l} sellers={sellers} />
+                </div>
               </div>
 
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-dim)' }}>
