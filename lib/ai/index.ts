@@ -1,3 +1,4 @@
+export { formatActivityForAlertExtraction } from "./format-activity-text";
 export {
   extractAlertsFromText,
   type CreatedAlertSummary,

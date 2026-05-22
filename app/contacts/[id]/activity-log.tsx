@@ -166,11 +166,13 @@ function ActivityModal({
   activity,
   deals,
   onClose,
+  onLogged,
 }: {
   slug: string
   activity?: ActivityEvent
   deals: DealRow[]
   onClose: () => void
+  onLogged?: (result: ActivityActionResult) => void
 }) {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
@@ -185,10 +187,11 @@ function ActivityModal({
 
   useEffect(() => {
     if (state?.ok) {
+      onLogged?.(state)
       router.refresh()
       onClose()
     }
-  }, [state])
+  }, [state, onLogged, onClose, router])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -373,7 +376,13 @@ function ActivityModal({
               disabled={pending}
               style={{ fontSize: 12 }}
             >
-              {pending ? 'Saving…' : activity ? 'Save' : 'Log activity'}
+              {pending
+                ? activity
+                  ? 'Saving…'
+                  : 'Logging & analyzing…'
+                : activity
+                  ? 'Save'
+                  : 'Log activity'}
             </button>
           </div>
         </form>
@@ -534,6 +543,7 @@ export default function ActivityLog({
   deals?: DealRow[]
 }) {
   const [modalOpen, setModalOpen] = useState(false)
+  const [alertBanner, setAlertBanner] = useState<string | null>(null)
 
   return (
     <>
@@ -542,9 +552,45 @@ export default function ActivityLog({
           slug={slug}
           deals={deals}
           onClose={() => setModalOpen(false)}
+          onLogged={(result) => {
+            if (!result.ok) return
+            if (result.alertsCreated && result.alertsCreated > 0) {
+              setAlertBanner(result.alertSummary ?? `Created ${result.alertsCreated} alert(s).`)
+            } else if (result.alertError) {
+              setAlertBanner(`Activity saved. Alerts: ${result.alertError}`)
+            }
+          }}
         />
       )}
       <div className="panel fade-up" style={{ marginTop: 0 }}>
+        {alertBanner && (
+          <div
+            style={{
+              fontSize: 11,
+              color: 'var(--text2)',
+              background: 'var(--surface2)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--r-sm)',
+              padding: '8px 10px',
+              marginBottom: 10,
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}
+          >
+            <span><span className="ai-badge" style={{ marginRight: 6 }}>✦ AI</span>{alertBanner}</span>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setAlertBanner(null)}
+              style={{ fontSize: 10, padding: '0 4px', flexShrink: 0 }}
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <div
           style={{
             display: 'flex',

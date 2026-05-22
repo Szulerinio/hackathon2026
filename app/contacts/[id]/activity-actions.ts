@@ -1,18 +1,53 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { formatActivityForAlertExtraction } from "../../../lib/ai/format-activity-text";
 import { prisma } from "../../../lib/prisma";
+import { extractAlertsFromTextAction } from "../../alerts/actions";
 
-export type ActivityActionResult = { ok: true } | { ok: false; error: string };
+type AlertExtractionMeta = {
+  alertsCreated?: number;
+  alertSummary?: string;
+  alertError?: string;
+};
+
+export type ActivityActionResult =
+  | ({ ok: true } & AlertExtractionMeta)
+  | { ok: false; error: string };
 
 function revalidate(slug: string, dealId?: number) {
   revalidatePath(`/contacts/${slug}`);
   revalidatePath("/contacts");
   revalidatePath("/");
+  revalidatePath("/alerts");
   if (dealId) {
     revalidatePath(`/deals/${dealId}`);
     revalidatePath("/deals");
   }
+}
+
+async function extractAlertsFromActivity(input: {
+  contactName: string;
+  contactSlug: string;
+  type: string;
+  date: string;
+  notes: string;
+}): Promise<AlertExtractionMeta> {
+  const text = formatActivityForAlertExtraction({
+    contactName: input.contactName,
+    type: input.type,
+    date: input.date,
+    notes: input.notes || null,
+  });
+
+  const ai = await extractAlertsFromTextAction(text, input.contactSlug);
+  if (ai.ok) {
+    return {
+      alertsCreated: ai.created.length,
+      alertSummary: ai.summary,
+    };
+  }
+  return { alertError: ai.error };
 }
 
 async function syncContactInteraction(contactId: number) {
@@ -68,8 +103,17 @@ export async function createActivityAction(
 
   await syncContactInteraction(contact.id);
   if (dealId) await syncDealLastActivity(dealId);
+
+  const alertMeta = await extractAlertsFromActivity({
+    contactName: contact.name,
+    contactSlug: slug,
+    type,
+    date,
+    notes,
+  });
+
   revalidate(slug, dealId);
-  return { ok: true };
+  return { ok: true, ...alertMeta };
 }
 
 export async function updateActivityAction(
