@@ -7,8 +7,6 @@ import {
   type CreateContactInput,
 } from "../../lib/contacts-mutations";
 import { parseTags } from "../../lib/derive-contact";
-import { formatDate, getCrmToday } from "../../lib/decay";
-
 export type CreateContactResult =
   | { ok: true; slug: string }
   | { ok: false; error: string };
@@ -38,10 +36,6 @@ function parseContactInput(
   const tagsRaw = String(formData.get("tags") ?? "");
   const tags = parseTags(tagsRaw).map((t) => t.toLowerCase());
 
-  const lastInteractionDateRaw = String(
-    formData.get("lastInteractionDate") ?? "",
-  ).trim();
-
   return {
     ok: true,
     input: {
@@ -55,11 +49,6 @@ function parseContactInput(
       tags,
       participantRole: parseParticipantRole(
         String(formData.get("participantRole") ?? ""),
-      ),
-      lastInteractionDate:
-        lastInteractionDateRaw || formatDate(getCrmToday()),
-      lastInteractionSummary: String(
-        formData.get("lastInteractionSummary") ?? "",
       ),
     },
   };

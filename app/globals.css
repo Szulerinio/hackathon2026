@@ -853,6 +853,18 @@ html, body {
   color: var(--text2);
   letter-spacing: 0.01em;
 }
+.form-hint {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.5;
+  margin: 0;
+}
+.section-hint {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.5;
+  margin: -4px 0 10px;
+}
 .form-required { color: var(--red); }
 .form-input {
   width: 100%;

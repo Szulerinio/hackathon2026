@@ -8,8 +8,6 @@ export type ContactFormValues = {
   email: string
   context: string
   notes: string
-  lastInteractionDate: string
-  lastInteractionSummary: string
 }
 
 type ContactFormFieldsProps = {
@@ -129,11 +127,15 @@ export default function ContactFormFields({
         <label className="form-label" htmlFor={p('context')}>
           Context
         </label>
+        <p className="form-hint">
+          Background and relationship — who they are, how you know them, family, work. Stable narrative you reread, not a to-do list.
+        </p>
         <textarea
           id={p('context')}
           name="context"
           className="form-input form-textarea"
-          rows={2}
+          rows={3}
+          placeholder="e.g. Sold her apartment in 2020; marketing manager; refers clients often; daughter Hania (7)."
           defaultValue={values.context ?? ''}
         />
       </div>
@@ -142,38 +144,16 @@ export default function ContactFormFields({
         <label className="form-label" htmlFor={p('notes')}>
           Notes
         </label>
+        <p className="form-hint">
+          Open items — follow-ups, promises, deadlines, things you need to do with them. Alerts are generated from this field.
+        </p>
         <textarea
           id={p('notes')}
           name="notes"
           className="form-input form-textarea"
-          rows={2}
-          defaultValue={values.notes ?? ''}
-        />
-      </div>
-
-      <div className="form-row form-row-date">
-        <label className="form-label" htmlFor={p('last-date')}>
-          Last interaction
-        </label>
-        <input
-          id={p('last-date')}
-          name="lastInteractionDate"
-          type="date"
-          className="form-input"
-          defaultValue={values.lastInteractionDate ?? ''}
-        />
-      </div>
-
-      <div className="form-row">
-        <label className="form-label" htmlFor={p('last-summary')}>
-          Interaction summary
-        </label>
-        <textarea
-          id={p('last-summary')}
-          name="lastInteractionSummary"
-          className="form-input form-textarea interaction-summary-input"
           rows={3}
-          defaultValue={values.lastInteractionSummary ?? ''}
+          placeholder="e.g. Send three luxury options by Friday. Check land registry for parking spot."
+          defaultValue={values.notes ?? ''}
         />
       </div>
     </>

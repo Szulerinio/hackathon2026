@@ -19,8 +19,6 @@ function toFormValues(contact: Contact): ContactFormValues {
     email: contact.email,
     context: contact.context,
     notes: contact.notes,
-    lastInteractionDate: contact.lastInteractionDate,
-    lastInteractionSummary: contact.lastInteractionSummary,
   }
 }
 

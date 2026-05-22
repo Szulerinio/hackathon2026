@@ -4,13 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { createContactAction, type CreateContactResult } from './actions'
 import ContactFormFields from './contact-form-fields'
-import { formatDate, getCrmToday } from '../../lib/decay'
 
 const initialState: CreateContactResult | null = null
-
-function todayInputValue(): string {
-  return formatDate(getCrmToday())
-}
 
 export default function AddContactModal() {
   const router = useRouter()
@@ -78,11 +73,7 @@ export default function AddContactModal() {
             </div>
 
             <form ref={formRef} action={formAction} className="modal-form">
-              <ContactFormFields
-                idPrefix="add-contact"
-                values={{ lastInteractionDate: todayInputValue() }}
-                autoFocusName
-              />
+              <ContactFormFields idPrefix="add-contact" autoFocusName />
 
               {state && !state.ok && (
                 <p className="form-error" role="alert">

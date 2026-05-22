@@ -15,8 +15,6 @@ export type CreateContactInput = {
   email?: string;
   tags: string[];
   participantRole?: "seller" | "buyer" | "both" | null;
-  lastInteractionDate?: string;
-  lastInteractionSummary?: string;
 };
 
 function emptyToNull(value: string | undefined): string | null {
@@ -45,10 +43,6 @@ export async function createContact(
   const tags = input.tags.map((t) => t.trim().toLowerCase()).filter(Boolean);
   const slug = await ensureUniqueSlug(name);
 
-  const lastInteractionDate =
-    emptyToNull(input.lastInteractionDate) ??
-    formatDate(getCrmToday());
-
   const row = await prisma.contact.create({
     data: {
       slug,
@@ -63,8 +57,8 @@ export async function createContact(
       contactType: deriveContactType(tags),
       participantRole: input.participantRole ?? null,
       decayThresholdDays: deriveDecayThresholdDays(tags),
-      lastInteractionDate,
-      lastInteractionSummary: emptyToNull(input.lastInteractionSummary),
+      lastInteractionDate: formatDate(getCrmToday()),
+      lastInteractionSummary: null,
     },
   });
 
@@ -82,10 +76,6 @@ export async function updateContact(
   const relationship = emptyToNull(input.relationship);
   const tags = input.tags.map((t) => t.trim().toLowerCase()).filter(Boolean);
 
-  const lastInteractionDate =
-    emptyToNull(input.lastInteractionDate) ??
-    formatDate(getCrmToday());
-
   const row = await prisma.contact.update({
     where: { slug: input.slug },
     data: {
@@ -100,8 +90,6 @@ export async function updateContact(
       contactType: deriveContactType(tags),
       participantRole: input.participantRole ?? null,
       decayThresholdDays: deriveDecayThresholdDays(tags),
-      lastInteractionDate,
-      lastInteractionSummary: emptyToNull(input.lastInteractionSummary),
     },
   });
 

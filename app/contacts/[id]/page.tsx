@@ -114,7 +114,8 @@ export default async function ContactDetailPage({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel fade-up">
             <div className="section-label">Context & background</div>
-            <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7 }}>{contact.context}</div>
+            <p className="section-hint">Who they are and your history together — stable background, not action items.</p>
+            <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7 }}>{contact.context || <span style={{ color: 'var(--text3)' }}>No context yet.</span>}</div>
           </div>
           {!contact.lastInteractionSummary && contact.lastInteractionDate && (
             <div className="panel fade-up">
@@ -122,12 +123,13 @@ export default async function ContactDetailPage({
               <div className="interaction-summary-date">{contact.lastInteractionDate}</div>
             </div>
           )}
-          {contact.notes && (
-            <div className="panel fade-up" style={{ borderColor: 'rgba(180,83,9,0.2)' }}>
-              <div className="section-label">Open items & notes</div>
-              <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{contact.notes}</div>
+          <div className="panel fade-up" style={{ borderColor: contact.notes ? 'rgba(180,83,9,0.2)' : undefined }}>
+            <div className="section-label">Open items & notes</div>
+            <p className="section-hint">Follow-ups, to-dos, and promises — things you need to do with them.</p>
+            <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+              {contact.notes || <span style={{ color: 'var(--text3)' }}>Nothing open — add notes when you edit this contact.</span>}
             </div>
-          )}
+          </div>
 
           <HouseholdMembers members={contact.members} slug={contact.id} />
 
