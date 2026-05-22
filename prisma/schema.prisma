@@ -92,18 +92,21 @@ model Deal {
 }
 
 model Alert {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   contactId       Int
-  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contact         Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
   reason          String
   suggestedAction String?
   severity        String
   /** YYYY-MM-DD — when Rafał should act (follow up, call, etc.) */
   dueDate         String?
   daysSince       Int?
-  isActive        Boolean  @default(true)
-  generatedAt     DateTime @default(now())
-  createdAt       DateTime @default(now())
+  isActive        Boolean   @default(true)
+  source          String    @default("ai")
+  done            Boolean   @default(false)
+  doneAt          DateTime?
+  generatedAt     DateTime  @default(now())
+  createdAt       DateTime  @default(now())
 }
 
 model ActivityEvent {

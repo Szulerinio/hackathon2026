@@ -6,6 +6,7 @@ import {
   getDealsForContact,
   getListingsForContact,
   getActivitiesForContact,
+  getTasksForContact,
 } from '../../../lib/crm'
 import Link from 'next/link'
 import ContactDetailClient from './contact-detail-client'
@@ -45,11 +46,12 @@ export default async function ContactDetailPage({
   if (!contact) notFound()
 
   const avClass = avatarClass(contact.id)
-  const [linkedListings, linkedDeals, activities, allDeals] = await Promise.all([
+  const [linkedListings, linkedDeals, activities, allDeals, tasks] = await Promise.all([
     getListingsForContact(contact.id),
     getDealsForContact(contact.id),
     getActivitiesForContact(contact.id),
     getDeals(),
+    getTasksForContact(contact.id),
   ])
 
   const isSeller = contact.type === 'seller' || contact.type === 'both'
@@ -65,6 +67,7 @@ export default async function ContactDetailPage({
     <ContactDetailClient
       contact={contact}
       activities={activities}
+      tasks={tasks}
       deals={allDeals}
       backLink={backLink}
     >

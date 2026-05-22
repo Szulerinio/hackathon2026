@@ -145,6 +145,15 @@ export type Alert = {
   daysSince: number;
 };
 
+export type Task = {
+  id: number;
+  title: string;
+  dueDate: string;
+  notes: string;
+  done: boolean;
+  createdAt: string;
+};
+
 function parseTagsJson(raw: string | null): string[] {
   if (!raw) return [];
   try {
@@ -370,6 +379,28 @@ export const getActivitiesForDeal = cache(
       createdAt: formatDate(r.createdAt),
       contactName: r.contact.name,
       contactSlug: r.contact.slug,
+    }));
+  },
+);
+
+export const getTasksForContact = cache(
+  async (contactSlug: string): Promise<Task[]> => {
+    const contact = await prisma.contact.findUnique({
+      where: { slug: contactSlug },
+      select: { id: true },
+    });
+    if (!contact) return [];
+    const rows = await prisma.alert.findMany({
+      where: { contactId: contact.id, source: "manual" },
+      orderBy: { dueDate: "asc" },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      title: r.reason,
+      dueDate: r.dueDate ?? "",
+      notes: r.suggestedAction ?? "",
+      done: r.done,
+      createdAt: formatDate(r.createdAt),
     }));
   },
 );

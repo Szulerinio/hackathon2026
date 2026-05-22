@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
-import type { ActivityEvent, Contact, DealRow } from '../../../lib/crm'
+import type { ActivityEvent, Contact, DealRow, Task } from '../../../lib/crm'
 import {
   alertMessageFromMeta,
   popContactAiBanner,
@@ -11,6 +11,7 @@ import type { UpdateContactResult } from '../actions'
 import AiAlertBanner from '../ai-alert-banner'
 import EditContactModal from '../edit-contact-modal'
 import ActivityLog from './activity-log'
+import Tasks from './tasks'
 
 function fromActivityResult(result: ActivityActionResult): string | null {
   if (!result.ok) return null
@@ -25,12 +26,14 @@ function fromContactUpdate(result: UpdateContactResult): string | null {
 export default function ContactDetailClient({
   contact,
   activities,
+  tasks = [],
   deals = [],
   backLink,
   children,
 }: {
   contact: Contact
   activities: ActivityEvent[]
+  tasks?: Task[]
   deals?: DealRow[]
   backLink: ReactNode
   children: ReactNode
@@ -67,6 +70,8 @@ export default function ContactDetailClient({
       )}
 
       {children}
+
+      <Tasks tasks={tasks} slug={contact.id} />
 
       <ActivityLog
         activities={activities}
