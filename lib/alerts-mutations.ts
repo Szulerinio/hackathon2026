@@ -8,8 +8,20 @@ export type CreateAlertInput = {
   reason: string;
   suggestedAction?: string;
   severity: DecayTier;
+  /** YYYY-MM-DD — when the action should happen */
+  dueDate?: string;
   daysSince?: number;
 };
+
+const DUE_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function parseDueDate(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed || !DUE_DATE_RE.test(trimmed)) return null;
+  const d = new Date(`${trimmed}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  return trimmed;
+}
 
 export type CreateAlertResult = {
   id: number;
@@ -47,6 +59,7 @@ export async function createAlert(
       reason,
       suggestedAction: emptyToNull(input.suggestedAction),
       severity: input.severity,
+      dueDate: parseDueDate(input.dueDate),
       daysSince:
         input.daysSince !== undefined && Number.isFinite(input.daysSince)
           ? Math.max(0, Math.round(input.daysSince))

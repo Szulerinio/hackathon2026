@@ -36,8 +36,7 @@ export async function runCrmAiTool(
     const input = tool.parseInput(block.input);
     return await tool.run(input);
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Invalid tool input.";
+    const message = err instanceof Error ? err.message : "Invalid tool input.";
     return {
       content: JSON.stringify({ ok: false, error: message }),
       is_error: true,

@@ -28,6 +28,7 @@ function buildSidebarItems(alertCount: number): { section: string; items: Sideba
           badgeType: 'red',
         },
         { href: '/deals', label: 'Active Deals', icon: '◫', badge: null, badgeType: null },
+        { href: '/ai/logs', label: 'AI logs', icon: '⌁', badge: null, badgeType: null },
       ],
     },
     {

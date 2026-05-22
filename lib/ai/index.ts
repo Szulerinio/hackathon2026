@@ -1,4 +1,5 @@
 export { formatActivityForAlertExtraction } from "./format-activity-text";
+export { getAiLogs, writeAiLog, type AiLogEntry } from "./logging";
 export {
   extractAlertsFromText,
   type CreatedAlertSummary,

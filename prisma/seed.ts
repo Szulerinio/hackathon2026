@@ -41,6 +41,7 @@ type SeedAlert = {
   contactName: string;
   reason: string;
   actionLabel: string;
+  dueDate?: string;
   createdAt: string;
 };
 
@@ -283,6 +284,7 @@ async function main() {
         contactId,
         reason: alert.reason,
         suggestedAction: alert.actionLabel,
+        dueDate: alert.dueDate ?? null,
         severity: "warning",
         generatedAt: new Date(`${alert.createdAt}T12:00:00`),
       },

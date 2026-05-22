@@ -96,6 +96,7 @@ export type AlertFeedItem = {
   contactSlug: string;
   reason: string;
   actionLabel: string;
+  dueDate: string;
   createdAt: string;
 };
 
@@ -140,6 +141,7 @@ export type Alert = {
   reason: string;
   suggestedAction: string;
   severity: DecayTier;
+  dueDate: string;
   daysSince: number;
 };
 
@@ -407,10 +409,18 @@ export const getAlerts = cache(async (): Promise<Alert[]> => {
       reason: row.reason,
       suggestedAction: row.suggestedAction ?? "",
       severity: row.severity as DecayTier,
+      dueDate: formatDate(row.dueDate),
       daysSince: row.daysSince ?? 0,
     };
   });
 });
+
+function compareAlertDueDates(a: string, b: string): number {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  return a.localeCompare(b);
+}
 
 export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
   const rows = await prisma.alert.findMany({
@@ -419,14 +429,18 @@ export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
     orderBy: { generatedAt: "desc" },
   });
 
-  return rows.map((row) => ({
+  const items = rows.map((row) => ({
     id: row.id,
     contactName: row.contact.name,
     contactSlug: row.contact.slug,
     reason: row.reason,
     actionLabel: row.suggestedAction ?? "Follow up",
+    dueDate: formatDate(row.dueDate),
     createdAt: formatDate(row.generatedAt),
   }));
+
+  items.sort((a, b) => compareAlertDueDates(a.dueDate, b.dueDate));
+  return items;
 });
 
 export { slugify };

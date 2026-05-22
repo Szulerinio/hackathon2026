@@ -22,6 +22,7 @@ export type ExtractAlertsFromTextActionResult =
 function revalidateAfterAlerts(contactSlugs: string[]) {
   revalidatePath("/");
   revalidatePath("/alerts");
+  revalidatePath("/ai/logs");
   for (const slug of new Set(contactSlugs)) {
     revalidatePath(`/contacts/${slug}`);
   }
@@ -33,6 +34,7 @@ function revalidateAfterAlerts(contactSlugs: string[]) {
 export async function extractAlertsFromTextAction(
   text: string,
   contactSlug?: string,
+  source = "server_action",
 ): Promise<ExtractAlertsFromTextActionResult> {
   const trimmed = text.trim();
   if (trimmed.length < 10) {
@@ -46,6 +48,7 @@ export async function extractAlertsFromTextAction(
     const result = await extractAlertsFromText({
       text: trimmed,
       contactSlug: contactSlug?.trim() || undefined,
+      source,
     });
 
     revalidateAfterAlerts(result.created.map((a) => a.contactSlug));

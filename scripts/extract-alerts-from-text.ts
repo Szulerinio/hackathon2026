@@ -15,7 +15,11 @@ Marek Kowalski has a viewing today; bring the rental yield comparison sheet.`;
   console.log("Analyzing text with Claude + create_alert tool...\n");
   if (contactSlug) console.log(`Primary contact: ${contactSlug}\n`);
 
-  const result = await extractAlertsFromText({ text, contactSlug });
+  const result = await extractAlertsFromText({
+    text,
+    contactSlug,
+    source: "script",
+  });
 
   console.log(result.summary);
   console.log(`Iterations: ${result.iterations}\n`);

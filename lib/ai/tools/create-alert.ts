@@ -62,6 +62,7 @@ export function parseCreateAlertToolInput(raw: unknown): CreateAlertToolInput {
     reason: readString(obj, "reason", { required: true, maxLength: 2000 })!,
     suggestedAction: readString(obj, "suggestedAction", { maxLength: 80 }),
     severity: readSeverity(obj),
+    dueDate: readString(obj, "dueDate") ?? undefined,
     daysSince: readDaysSince(obj),
   };
 }
@@ -77,6 +78,7 @@ Required fields:
 - contactSlug: exact contact slug from CRM (e.g. "anna-krajewska"), not display name
 - reason: 1–3 sentences explaining WHY the alert exists — cite concrete facts from notes (deadlines, unpaid invoices, unanswered questions)
 - severity: urgency tier — "urgent" (act today), "warning" (this week), "watch" (monitor), "ok" (low priority reminder)
+- dueDate: YYYY-MM-DD when Rafał should act — REQUIRED when the text mentions a deadline, meeting, viewing, or "by Friday". Use CRM_TODAY context from the notes. If no date is inferable, omit.
 
 Optional:
 - suggestedAction: short button label shown in UI (e.g. "Call", "Follow up", "Prepare"). Defaults to "Follow up" in the feed if omitted.
@@ -102,6 +104,11 @@ Do not create duplicate alerts for the same issue. One alert = one actionable in
           enum: ["urgent", "warning", "watch", "ok"],
           description:
             "urgent = act today; warning = this week; watch = monitor; ok = soft reminder.",
+        },
+        dueDate: {
+          type: "string",
+          description:
+            "Date the action should happen, ISO format YYYY-MM-DD (e.g. 2026-05-24). Set when text specifies when to call, follow up, or deliver something.",
         },
         suggestedAction: {
           type: "string",

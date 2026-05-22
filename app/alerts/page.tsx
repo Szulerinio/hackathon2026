@@ -36,7 +36,13 @@ export default async function AlertsPage() {
                   >
                     {alert.contactName}
                   </Link>
-                  <span style={{ fontSize: 11, color: 'var(--text3)' }}>{alert.createdAt}</span>
+                  {alert.dueDate ? (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--red)' }}>
+                      Due {alert.dueDate}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>No due date</span>
+                  )}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.6 }}>
                   {alert.reason}

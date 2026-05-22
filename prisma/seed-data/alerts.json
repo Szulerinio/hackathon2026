@@ -3,30 +3,35 @@
     "contactName": "Anna Krajewska",
     "reason": "Waiting for CEO apartment shortlist since last week. Mentioned tight deadline — needs 3 options by Friday.",
     "actionLabel": "Follow up",
+    "dueDate": "2026-05-23",
     "createdAt": "2026-05-22"
   },
   {
     "contactName": "Marek Kowalski",
     "reason": "Viewing scheduled today — bring rental yield comparison sheet for the Dietla apartment.",
     "actionLabel": "Prepare",
+    "dueDate": "2026-05-22",
     "createdAt": "2026-05-22"
   },
   {
     "contactName": "Piotr Zieliński",
     "reason": "Has been hinting at formalizing the referral arrangement for months. You keep avoiding it.",
     "actionLabel": "Call",
+    "dueDate": "2026-05-25",
     "createdAt": "2026-05-21"
   },
   {
     "contactName": "Beata Mazur",
     "reason": "Parking spot land registry check still pending after 40 days. She asked twice already.",
     "actionLabel": "Follow up",
+    "dueDate": "2026-05-24",
     "createdAt": "2026-05-20"
   },
   {
     "contactName": "Damian Krawczyk",
     "reason": "Invoice for Kowalczyk job from February still unpaid. 28 days overdue.",
     "actionLabel": "Call",
+    "dueDate": "2026-05-22",
     "createdAt": "2026-05-19"
   }
 ]

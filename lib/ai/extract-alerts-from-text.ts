@@ -1,6 +1,8 @@
 import { getClaudeConfig } from "../claude/config";
+import { formatDate, getCrmToday } from "../decay";
 import { prisma } from "../prisma";
 import { runClaudeToolLoop, type ClaudeApiMessage } from "./claude-tool-loop";
+import { writeAiLog } from "./logging";
 import { CRM_AI_TOOL_DEFINITIONS } from "./tools/registry";
 
 export type CreatedAlertSummary = {
@@ -13,6 +15,8 @@ export type ExtractAlertsFromTextInput = {
   text: string;
   /** When analyzing one contact's notes, prefer this slug. */
   contactSlug?: string;
+  /** e.g. activity_log, manual, script */
+  source?: string;
 };
 
 export type ExtractAlertsFromTextResult = {
@@ -38,13 +42,16 @@ Rules:
 - Only create alerts you can tie to a contact in the directory (use exact contactSlug).
 - reason: 1–3 sentences with specific facts from the text (deadlines, amounts, unanswered requests).
 - severity: urgent (today), warning (this week), watch (monitor), ok (soft reminder).
+- dueDate: YYYY-MM-DD when Rafał should act — set whenever a deadline, appointment, or "by [date]" appears in the text.
 - suggestedAction: short UI label — "Call", "Follow up", "Prepare", etc.
 - daysSince: include when the text implies how long something has been waiting.
 - Do not duplicate the same issue; prefer 1–5 high-quality alerts over many vague ones.
 - If nothing is actionable, do not call create_alert; reply briefly that no alerts were needed.
 
 Contact directory:
-${directory}`;
+${directory}
+
+Today's date (CRM): ${formatDate(getCrmToday())}. Use this to resolve relative deadlines ("Friday", "next week", "today").`;
 }
 
 function buildUserMessage(
@@ -116,21 +123,67 @@ export async function extractAlertsFromText(
   }
 
   const { cheapModel } = getClaudeConfig();
+  const source = input.source?.trim() || "extract_alerts";
+  const contactSlug = input.contactSlug?.trim();
+  const started = Date.now();
 
-  const { finalText, iterations, messages } = await runClaudeToolLoop({
-    system: buildSystemPrompt(buildContactDirectory(contacts)),
-    messages: [{ role: "user", content: buildUserMessage(text, primaryContact) }],
-    tools: CRM_AI_TOOL_DEFINITIONS,
+  await writeAiLog({
+    operation: "extract_alerts",
+    status: "info",
+    source,
+    contactSlug,
     model: cheapModel,
-    max_tokens: 2048,
-    temperature: 0,
+    summary: "Started alert extraction",
+    inputPreview: text,
   });
 
-  const created = parseCreatedFromMessages(messages);
-  const summary =
-    created.length > 0
-      ? `Created ${created.length} alert${created.length === 1 ? "" : "s"}.`
-      : finalText || "No alerts created.";
+  try {
+    const { finalText, iterations, messages } = await runClaudeToolLoop({
+      system: buildSystemPrompt(buildContactDirectory(contacts)),
+      messages: [{ role: "user", content: buildUserMessage(text, primaryContact) }],
+      tools: CRM_AI_TOOL_DEFINITIONS,
+      model: cheapModel,
+      max_tokens: 2048,
+      temperature: 0,
+      logContext: { source, contactSlug },
+    });
 
-  return { created, summary, iterations };
+    const created = parseCreatedFromMessages(messages);
+    const summary =
+      created.length > 0
+        ? `Created ${created.length} alert${created.length === 1 ? "" : "s"}.`
+        : finalText || "No alerts created.";
+
+    await writeAiLog({
+      operation: "extract_alerts",
+      status: "success",
+      source,
+      contactSlug,
+      model: cheapModel,
+      summary,
+      inputPreview: text,
+      durationMs: Date.now() - started,
+      payload: {
+        iterations,
+        alerts_created: created,
+        final_text_preview: finalText.slice(0, 500),
+      },
+    });
+
+    return { created, summary, iterations };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Extract alerts failed";
+    await writeAiLog({
+      operation: "extract_alerts",
+      status: "error",
+      source,
+      contactSlug,
+      model: cheapModel,
+      summary: "Alert extraction failed",
+      inputPreview: text,
+      error: message,
+      durationMs: Date.now() - started,
+    });
+    throw err;
+  }
 }

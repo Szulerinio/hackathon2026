@@ -20,6 +20,7 @@ function revalidate(slug: string, dealId?: number) {
   revalidatePath("/contacts");
   revalidatePath("/");
   revalidatePath("/alerts");
+  revalidatePath("/ai/logs");
   if (dealId) {
     revalidatePath(`/deals/${dealId}`);
     revalidatePath("/deals");
@@ -40,7 +41,11 @@ async function extractAlertsFromActivity(input: {
     notes: input.notes || null,
   });
 
-  const ai = await extractAlertsFromTextAction(text, input.contactSlug);
+  const ai = await extractAlertsFromTextAction(
+    text,
+    input.contactSlug,
+    "activity_log",
+  );
   if (ai.ok) {
     return {
       alertsCreated: ai.created.length,

@@ -1,12 +1,23 @@
 import { getClaudeConfig } from "../claude/config";
 import { ClaudeApiError } from "../claude/client";
 import type { AnthropicErrorBody } from "../claude/types";
+import { writeAiLog } from "./logging";
 import type { AnthropicToolDefinition } from "./tools/types";
 import { runCrmAiTool } from "./tools/registry";
 
+export type AiLogContext = {
+  source?: string;
+  contactSlug?: string;
+};
+
 export type ClaudeContentBlock =
   | { type: "text"; text: string }
-  | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> }
+  | {
+      type: "tool_use";
+      id: string;
+      name: string;
+      input: Record<string, unknown>;
+    }
   | {
       type: "tool_result";
       tool_use_id: string;
@@ -27,6 +38,7 @@ export type ToolLoopRequest = {
   max_tokens?: number;
   temperature?: number;
   maxIterations?: number;
+  logContext?: AiLogContext;
 };
 
 export type ToolLoopResponse = {
@@ -43,7 +55,9 @@ type ApiMessageResponse = {
   stop_reason: string | null;
 };
 
-async function postMessages(body: Record<string, unknown>): Promise<ApiMessageResponse> {
+async function postMessages(
+  body: Record<string, unknown>,
+): Promise<ApiMessageResponse> {
   const config = getClaudeConfig();
   const url = `${config.baseUrl.replace(/\/$/, "")}/messages`;
 
@@ -66,10 +80,7 @@ async function postMessages(body: Record<string, unknown>): Promise<ApiMessageRe
   }
 
   if (!response.ok) {
-    throw new ClaudeApiError(
-      response.status,
-      parsed as AnthropicErrorBody,
-    );
+    throw new ClaudeApiError(response.status, parsed as AnthropicErrorBody);
   }
 
   return parsed as ApiMessageResponse;
@@ -96,24 +107,61 @@ export async function runClaudeToolLoop(
   let iterations = 0;
   let finalText = "";
 
+  const model = request.model ?? config.defaultModel;
+  const logCtx = request.logContext;
+
   while (iterations < maxIterations) {
     iterations++;
+    const turnStart = Date.now();
 
-    const result = await postMessages({
-      model: request.model ?? config.defaultModel,
-      max_tokens: request.max_tokens ?? 4096,
-      system: request.system,
-      messages,
-      tools: request.tools,
-      tool_choice: { type: "auto" },
-      temperature: request.temperature ?? 0,
-    });
+    let result: ApiMessageResponse;
+    try {
+      result = await postMessages({
+        model,
+        max_tokens: request.max_tokens ?? 4096,
+        system: request.system,
+        messages,
+        tools: request.tools,
+        tool_choice: { type: "auto" },
+        temperature: request.temperature ?? 0,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Claude request failed";
+      await writeAiLog({
+        operation: "claude_turn",
+        status: "error",
+        source: logCtx?.source,
+        contactSlug: logCtx?.contactSlug,
+        model,
+        summary: `Turn ${iterations} failed`,
+        error: message,
+        durationMs: Date.now() - turnStart,
+        payload: { iteration: iterations },
+      });
+      throw err;
+    }
 
     finalText = textFromBlocks(result.content);
     const toolUses = result.content.filter(
       (b): b is Extract<ClaudeContentBlock, { type: "tool_use" }> =>
         b.type === "tool_use",
     );
+
+    await writeAiLog({
+      operation: "claude_turn",
+      status: "success",
+      source: logCtx?.source,
+      contactSlug: logCtx?.contactSlug,
+      model,
+      summary: `Turn ${iterations}: ${result.stop_reason ?? "done"}${toolUses.length ? ` · ${toolUses.length} tool(s)` : ""}`,
+      durationMs: Date.now() - turnStart,
+      payload: {
+        iteration: iterations,
+        stop_reason: result.stop_reason,
+        tool_calls: toolUses.map((t) => ({ name: t.name, input: t.input })),
+        text_preview: finalText.slice(0, 400),
+      },
+    });
 
     messages.push({ role: "assistant", content: result.content });
 
@@ -128,6 +176,7 @@ export async function runClaudeToolLoop(
 
     const toolResults: ClaudeContentBlock[] = [];
     for (const toolUse of toolUses) {
+      const toolStart = Date.now();
       const handlerResult = await runCrmAiTool({
         name: toolUse.name,
         input: toolUse.input,
@@ -136,6 +185,19 @@ export async function runClaudeToolLoop(
         typeof handlerResult.content === "string"
           ? handlerResult.content
           : JSON.stringify(handlerResult.content);
+
+      await writeAiLog({
+        operation: "tool_call",
+        status: handlerResult.is_error ? "error" : "success",
+        source: logCtx?.source,
+        contactSlug: logCtx?.contactSlug,
+        model,
+        summary: `${toolUse.name}${handlerResult.is_error ? " failed" : " ok"}`,
+        inputPreview: JSON.stringify(toolUse.input),
+        payload: { tool_use_id: toolUse.id, result: content },
+        error: handlerResult.is_error ? content : undefined,
+        durationMs: Date.now() - toolStart,
+      });
 
       toolResults.push({
         type: "tool_result",
@@ -147,6 +209,16 @@ export async function runClaudeToolLoop(
 
     messages.push({ role: "user", content: toolResults });
   }
+
+  await writeAiLog({
+    operation: "tool_loop",
+    status: "error",
+    source: logCtx?.source,
+    contactSlug: logCtx?.contactSlug,
+    model,
+    summary: `Stopped after ${maxIterations} iterations`,
+    payload: { iterations: maxIterations },
+  });
 
   return {
     stop_reason: "max_iterations",

@@ -87,7 +87,7 @@ export default async function DashboardPage() {
           <div key={alert.id} className="alert-item">
             <div className="alert-top">
               <span className="aname">{alert.contactName}</span>
-              <span className="adays red">{alert.createdAt}</span>
+              <span className="adays red">{alert.dueDate ? `Due ${alert.dueDate}` : alert.createdAt}</span>
             </div>
             <div className="areason">{alert.reason.slice(0, 110)}{alert.reason.length > 110 ? '…' : ''}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>

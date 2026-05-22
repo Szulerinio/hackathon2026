@@ -98,6 +98,8 @@ model Alert {
   reason          String
   suggestedAction String?
   severity        String
+  /** YYYY-MM-DD — when Rafał should act (follow up, call, etc.) */
+  dueDate         String?
   daysSince       Int?
   isActive        Boolean  @default(true)
   generatedAt     DateTime @default(now())
@@ -115,4 +117,22 @@ model ActivityEvent {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// AI feature audit trail (table name: logs)
+model AiLog {
+  id           Int      @id @default(autoincrement())
+  operation    String
+  status       String
+  source       String?
+  contactSlug  String?
+  model        String?
+  summary      String?
+  inputPreview String?
+  payload      String?
+  error        String?
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@map("logs")
 }
