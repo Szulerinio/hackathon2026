@@ -101,7 +101,7 @@ let _cache: Contact[] | null = null
 
 export function getContacts(): Contact[] {
   if (_cache) return _cache
-  const csvPath = path.join(process.cwd(), '..', 'dataset-rafal.csv')
+  const csvPath = path.join(process.cwd(), 'dataset-rafal.csv')
   const content = fs.readFileSync(csvPath, 'utf-8')
   const rows = parseCSV(content)
   _cache = rows.map(row => {

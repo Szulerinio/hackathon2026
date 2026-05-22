@@ -16,7 +16,7 @@ type CsvRow = {
 };
 
 async function main() {
-  const csvPath = join(__dirname, "../../dataset-rafal.csv");
+  const csvPath = join(__dirname, "../dataset-rafal.csv");
   const rows = parse(readFileSync(csvPath, "utf-8"), {
     columns: true,
     skip_empty_lines: true,
