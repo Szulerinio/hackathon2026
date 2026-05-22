@@ -201,12 +201,13 @@ html, body {
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; }
 .page-title {
   font-family: var(--font-syne, 'Syne', system-ui, sans-serif);
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.8px;
   color: var(--text);
+  line-height: 1.1;
 }
-.page-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.page-sub { font-size: 11px; color: var(--text3); margin-top: 4px; letter-spacing: 0.01em; }
 
 /* Today strip */
 .today-strip {
@@ -235,33 +236,51 @@ html, body {
 /* Metric cards */
 .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .mcard {
+  --card-accent: var(--border2);
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--card-accent);
   border-radius: var(--r);
-  padding: 14px 16px;
+  padding: 16px 18px 14px;
   cursor: pointer;
-  transition: border-color 0.12s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.mcard:hover { border-color: var(--border2); }
-.mcard.alert-card { border-color: rgba(204,43,43,0.25); }
-.mcard.warn-card { border-color: rgba(180,83,9,0.2); }
+.mcard:hover {
+  border-color: var(--border2);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
+}
+.mcard.alert-card {
+  --card-accent: var(--red);
+  border-color: rgba(204,43,43,0.18);
+}
+.mcard.warn-card {
+  --card-accent: var(--amber);
+  border-color: rgba(180,83,9,0.15);
+}
+.mcard.green-card { --card-accent: var(--green); }
+.mcard.accent-card { --card-accent: var(--accent-dim); }
 .mlabel {
-  font-size: 11px;
+  font-size: 9px;
   color: var(--text3);
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 .mval {
   font-family: var(--font-syne, 'Syne', system-ui, sans-serif);
-  font-size: 26px;
+  font-size: 44px;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -2.5px;
+  line-height: 0.95;
   color: var(--text);
+  margin-bottom: 10px;
 }
 .mval.red { color: var(--red); }
 .mval.amber { color: var(--amber); }
 .mval.green { color: var(--green); }
-.msub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.msub { font-size: 11px; color: var(--text3); }
 .msub.up { color: var(--green); }
 .msub.dn { color: var(--red); }
 

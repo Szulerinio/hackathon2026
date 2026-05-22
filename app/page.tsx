@@ -58,12 +58,12 @@ export default async function DashboardPage() {
           <div className="mval">{contacts.length}</div>
           <div className="msub">people across your network</div>
         </div>
-        <div className="mcard">
+        <div className="mcard green-card">
           <div className="mlabel">Active listings</div>
           <div className="mval green">{activeListings}</div>
           <div className="msub up">{listings.length} total properties</div>
         </div>
-        <div className="mcard">
+        <div className="mcard accent-card">
           <div className="mlabel">Active deals</div>
           <div className="mval" style={{ color: 'var(--accent-dim)' }}>{activeDeals}</div>
           <div className="msub">{deals.length} total deals</div>

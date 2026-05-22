@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { HouseholdMember } from '../../../lib/crm'
 import {
@@ -28,10 +28,12 @@ function MemberForm({
 
   const [state, formAction, pending] = useActionState(action, initialState)
 
-  if (state?.ok) {
-    router.refresh()
-    onCancel()
-  }
+  useEffect(() => {
+    if (state?.ok) {
+      router.refresh()
+      onCancel()
+    }
+  }, [state])
 
   return (
     <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 0' }}>
