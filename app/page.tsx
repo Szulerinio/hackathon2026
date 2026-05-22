@@ -116,6 +116,9 @@ export default async function DashboardPage() {
                     Call
                   </a>
                 )}
+                {!alert.contactEmail && !alert.contactPhone && (
+                  <span style={{ fontSize: 11, color: 'var(--text3)', padding: '2px 8px' }}>No contact info</span>
+                )}
               </div>
             </div>
           </div>
