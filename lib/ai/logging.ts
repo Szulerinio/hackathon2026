@@ -7,6 +7,7 @@ export type WriteAiLogInput = {
   status: AiLogStatus;
   source?: string;
   contactSlug?: string;
+  listingId?: number;
   model?: string;
   summary?: string;
   inputPreview?: string;
@@ -44,6 +45,12 @@ export async function writeAiLog(input: WriteAiLogInput): Promise<number | null>
         status: input.status,
         source: input.source?.trim() || null,
         contactSlug: input.contactSlug?.trim() || null,
+        listingId:
+          input.listingId !== undefined &&
+          Number.isInteger(input.listingId) &&
+          input.listingId > 0
+            ? input.listingId
+            : null,
         model: input.model?.trim() || null,
         summary: truncate(input.summary, 500),
         inputPreview: truncate(input.inputPreview, MAX_PREVIEW),
@@ -68,6 +75,7 @@ export type AiLogEntry = {
   status: AiLogStatus;
   source: string;
   contactSlug: string;
+  listingId: number | null;
   model: string;
   summary: string;
   inputPreview: string;
@@ -89,6 +97,7 @@ export async function getAiLogs(limit = 100): Promise<AiLogEntry[]> {
     status: row.status as AiLogStatus,
     source: row.source ?? "",
     contactSlug: row.contactSlug ?? "",
+    listingId: row.listingId ?? null,
     model: row.model ?? "",
     summary: row.summary ?? "",
     inputPreview: row.inputPreview ?? "",

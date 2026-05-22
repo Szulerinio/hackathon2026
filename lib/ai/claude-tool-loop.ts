@@ -8,6 +8,7 @@ import { runCrmAiTool } from "./tools/registry";
 export type AiLogContext = {
   source?: string;
   contactSlug?: string;
+  listingId?: number;
 };
 
 export type ClaudeContentBlock =
@@ -132,6 +133,7 @@ export async function runClaudeToolLoop(
         status: "error",
         source: logCtx?.source,
         contactSlug: logCtx?.contactSlug,
+        listingId: logCtx?.listingId,
         model,
         summary: `Turn ${iterations} failed`,
         error: message,
@@ -152,6 +154,7 @@ export async function runClaudeToolLoop(
       status: "success",
       source: logCtx?.source,
       contactSlug: logCtx?.contactSlug,
+      listingId: logCtx?.listingId,
       model,
       summary: `Turn ${iterations}: ${result.stop_reason ?? "done"}${toolUses.length ? ` · ${toolUses.length} tool(s)` : ""}`,
       durationMs: Date.now() - turnStart,
@@ -191,6 +194,7 @@ export async function runClaudeToolLoop(
         status: handlerResult.is_error ? "error" : "success",
         source: logCtx?.source,
         contactSlug: logCtx?.contactSlug,
+        listingId: logCtx?.listingId,
         model,
         summary: `${toolUse.name}${handlerResult.is_error ? " failed" : " ok"}`,
         inputPreview: JSON.stringify(toolUse.input),
@@ -215,6 +219,7 @@ export async function runClaudeToolLoop(
     status: "error",
     source: logCtx?.source,
     contactSlug: logCtx?.contactSlug,
+    listingId: logCtx?.listingId,
     model,
     summary: `Stopped after ${maxIterations} iterations`,
     payload: { iterations: maxIterations },

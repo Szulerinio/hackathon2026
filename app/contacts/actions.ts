@@ -5,6 +5,10 @@ import {
   runAlertExtraction,
   type AlertExtractionMeta,
 } from "../../lib/ai/alert-extraction-meta";
+import {
+  runDealMatchForContact,
+  type DealMatchMeta,
+} from "../../lib/ai/deal-match-meta";
 import { formatContactFieldsForAlertExtraction } from "../../lib/ai/format-contact-text";
 import {
   createContact,
@@ -15,11 +19,11 @@ import { parseTags } from "../../lib/derive-contact";
 import { prisma } from "../../lib/prisma";
 
 export type CreateContactResult =
-  | ({ ok: true; slug: string } & AlertExtractionMeta)
+  | ({ ok: true; slug: string } & AlertExtractionMeta & DealMatchMeta)
   | { ok: false; error: string };
 
 export type UpdateContactResult =
-  | ({ ok: true; slug: string } & AlertExtractionMeta)
+  | ({ ok: true; slug: string } & AlertExtractionMeta & DealMatchMeta)
   | { ok: false; error: string };
 
 function parseParticipantRole(
@@ -67,6 +71,7 @@ function revalidateContactPaths(slug: string) {
   revalidatePath("/contacts");
   revalidatePath("/");
   revalidatePath("/alerts");
+  revalidatePath("/deals");
   revalidatePath("/ai/logs");
   revalidatePath(`/contacts/${slug}`);
 }
@@ -111,6 +116,7 @@ export async function createContactAction(
     const { slug } = await createContact(parsed.input);
 
     let alertMeta: AlertExtractionMeta = {};
+    let dealMeta: DealMatchMeta = {};
     if (context || notes) {
       alertMeta = await extractAlertsFromContactFields(
         {
@@ -121,10 +127,11 @@ export async function createContactAction(
         },
         "create",
       );
+      dealMeta = await runDealMatchForContact(slug, "contact_create");
     }
 
     revalidateContactPaths(slug);
-    return { ok: true, slug, ...alertMeta };
+    return { ok: true, slug, ...alertMeta, ...dealMeta };
   } catch (err) {
     console.error("createContact failed:", err);
     return { ok: false, error: "Could not save contact. Try again." };
@@ -160,6 +167,7 @@ export async function updateContactAction(
     });
 
     let alertMeta: AlertExtractionMeta = {};
+    let dealMeta: DealMatchMeta = {};
     if (contextChanged || notesChanged) {
       alertMeta = await extractAlertsFromContactFields(
         {
@@ -170,10 +178,11 @@ export async function updateContactAction(
         },
         "edit",
       );
+      dealMeta = await runDealMatchForContact(savedSlug, "contact_edit");
     }
 
     revalidateContactPaths(savedSlug);
-    return { ok: true, slug: savedSlug, ...alertMeta };
+    return { ok: true, slug: savedSlug, ...alertMeta, ...dealMeta };
   } catch (err) {
     console.error("updateContact failed:", err);
     return { ok: false, error: "Could not update contact. Try again." };

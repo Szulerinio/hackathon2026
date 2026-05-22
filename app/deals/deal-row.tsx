@@ -6,6 +6,7 @@ import type { DealRow as DealRowType } from '../../lib/crm'
 import EditDealModal from './edit-deal-modal'
 
 function statusPill(status: string) {
+  if (status === 'potential') return 's-dim'
   if (status === 'viewing') return 's-blue'
   if (status === 'offer') return 's-amber'
   if (status === 'negotiation') return 's-red'

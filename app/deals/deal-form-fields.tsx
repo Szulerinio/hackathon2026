@@ -91,6 +91,7 @@ export default function DealFormFields({
             className="form-input"
             defaultValue={values.status ?? 'viewing'}
           >
+            <option value="potential">Potential</option>
             <option value="viewing">Viewing</option>
             <option value="offer">Offer</option>
             <option value="negotiation">Negotiation</option>

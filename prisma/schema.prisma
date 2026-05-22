@@ -130,6 +130,7 @@ model AiLog {
   status       String
   source       String?
   contactSlug  String?
+  listingId    Int?
   model        String?
   summary      String?
   inputPreview String?

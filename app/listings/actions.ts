@@ -1,10 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createListing, updateListing } from "../../lib/listings-mutations";
+import {
+  runDealMatchForListing,
+  type DealMatchMeta,
+} from "../../lib/ai/deal-match-meta";
+import {
+  createListing,
+  updateListing,
+  type CreateListingInput,
+} from "../../lib/listings-mutations";
+import { prisma } from "../../lib/prisma";
 
 export type CreateListingResult =
-  | { ok: true; id: number }
+  | ({ ok: true; id: number } & DealMatchMeta)
   | { ok: false; error: string };
 
 export type UpdateListingResult = CreateListingResult;
@@ -13,7 +22,7 @@ const LISTING_STATUSES = ["active", "sold", "withdrawn"] as const;
 
 function parseListingInput(
   formData: FormData,
-): { ok: true; input: Parameters<typeof createListing>[0] } | { ok: false; error: string } {
+): { ok: true; input: CreateListingInput } | { ok: false; error: string } {
   const address = String(formData.get("address") ?? "").trim();
   if (address.length < 5) {
     return {
@@ -54,9 +63,43 @@ function parseListingInput(
 function revalidateListingPaths(...ownerSlugs: string[]) {
   revalidatePath("/listings");
   revalidatePath("/");
+  revalidatePath("/deals");
+  revalidatePath("/ai/logs");
   for (const slug of new Set(ownerSlugs.filter(Boolean))) {
     revalidatePath(`/contacts/${slug}`);
   }
+}
+
+function normalizeField(value: string | null | undefined): string {
+  return (value ?? "").trim();
+}
+
+function listingFieldsChanged(
+  existing: {
+    address: string | null;
+    title: string;
+    description: string | null;
+    valueDisplay: string | null;
+    status: string;
+    daysOnMarket: number | null;
+    owner: { slug: string };
+  },
+  input: CreateListingInput,
+): boolean {
+  const address = input.address.trim();
+  const description = normalizeField(input.description);
+  const price = normalizeField(input.price);
+  const existingAddress =
+    normalizeField(existing.address) || normalizeField(existing.title);
+
+  if (existingAddress !== address) return true;
+  if (normalizeField(existing.description) !== description) return true;
+  if (normalizeField(existing.valueDisplay) !== price) return true;
+  if (existing.owner.slug !== input.ownerSlug.trim()) return true;
+  if (existing.status !== input.status) return true;
+  if ((existing.daysOnMarket ?? 0) !== input.daysOnMarket) return true;
+
+  return false;
 }
 
 export async function createListingAction(
@@ -68,7 +111,10 @@ export async function createListingAction(
   try {
     const { id } = await createListing(parsed.input);
     revalidateListingPaths(parsed.input.ownerSlug);
-    return { ok: true, id };
+
+    const dealMeta = await runDealMatchForListing(id, "listing_create");
+
+    return { ok: true, id, ...dealMeta };
   } catch (err) {
     console.error("createListing failed:", err);
     const message =
@@ -92,9 +138,24 @@ export async function updateListingAction(
   if (!parsed.ok) return parsed;
 
   try {
+    const existing = await prisma.listing.findUnique({
+      where: { id },
+      include: { owner: { select: { slug: true } } },
+    });
+    if (!existing) {
+      return { ok: false, error: "Listing was not found." };
+    }
+
+    const shouldMatch = listingFieldsChanged(existing, parsed.input);
     const result = await updateListing({ id, ...parsed.input });
     revalidateListingPaths(result.previousOwnerSlug, result.ownerSlug);
-    return { ok: true, id: result.id };
+
+    let dealMeta: DealMatchMeta = {};
+    if (shouldMatch) {
+      dealMeta = await runDealMatchForListing(id, "listing_edit");
+    }
+
+    return { ok: true, id: result.id, ...dealMeta };
   } catch (err) {
     console.error("updateListing failed:", err);
     let message = "Could not update listing. Try again.";

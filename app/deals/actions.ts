@@ -9,7 +9,13 @@ export type CreateDealResult =
 
 export type UpdateDealResult = CreateDealResult;
 
-const DEAL_STATUSES = ["viewing", "offer", "negotiation", "closed"] as const;
+const DEAL_STATUSES = [
+  "potential",
+  "viewing",
+  "offer",
+  "negotiation",
+  "closed",
+] as const;
 
 function parseDealInput(
   formData: FormData,

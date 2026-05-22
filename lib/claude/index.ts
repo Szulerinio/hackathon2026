@@ -5,7 +5,11 @@ export {
   textFromMessage,
   type ClaudeClient,
 } from "./client";
-export { getClaudeConfig, type ClaudeConfig } from "./config";
+export {
+  getClaudeConfig,
+  hasClaudeApiKey,
+  type ClaudeConfig,
+} from "./config";
 export type {
   ClaudeMessage,
   ClaudeRole,

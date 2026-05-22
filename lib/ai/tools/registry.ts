@@ -1,4 +1,7 @@
 import { createAlertTool } from "./create-alert";
+import { createPotentialDealTool } from "./create-potential-deal";
+import { getClientNotesTool } from "./get-client-notes";
+import { getListingDescriptionsTool } from "./get-listing-descriptions";
 import type {
   AnthropicToolDefinition,
   CrmAiTool,
@@ -7,7 +10,12 @@ import type {
 } from "./types";
 
 /** All CRM tools exposed to Claude. Pass to the Messages API `tools` array. */
-export const CRM_AI_TOOLS: CrmAiTool[] = [createAlertTool];
+export const CRM_AI_TOOLS: CrmAiTool[] = [
+  createAlertTool,
+  createPotentialDealTool,
+  getClientNotesTool,
+  getListingDescriptionsTool,
+];
 
 export const CRM_AI_TOOL_DEFINITIONS: AnthropicToolDefinition[] =
   CRM_AI_TOOLS.map((t) => t.definition);

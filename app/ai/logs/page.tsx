@@ -25,7 +25,7 @@ export default async function AiLogsPage() {
         <div>
           <div className="page-title">AI logs</div>
           <div className="page-sub">
-            Audit trail for alert extraction · {logs.length} recent entries
+            Audit trail for AI features · {logs.length} recent entries
           </div>
         </div>
         <span className="ai-badge">✦ AI</span>
@@ -67,6 +67,9 @@ export default async function AiLogsPage() {
                     )}
                     {log.contactSlug && (
                       <span style={{ fontSize: 11, color: 'var(--text3)' }}>{log.contactSlug}</span>
+                    )}
+                    {log.listingId != null && (
+                      <span style={{ fontSize: 11, color: 'var(--text3)' }}>listing #{log.listingId}</span>
                     )}
                   </div>
                   {log.summary && (

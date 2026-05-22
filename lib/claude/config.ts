@@ -21,6 +21,10 @@ const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 /** Haiku — cheap tool use; override via ANTHROPIC_CHEAP_MODEL */
 const DEFAULT_CHEAP_MODEL = "claude-haiku-4-5-20251001";
 
+export function hasClaudeApiKey(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.ANTHROPIC_API_KEY?.trim());
+}
+
 export function getClaudeConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): ClaudeConfig {
