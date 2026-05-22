@@ -57,6 +57,14 @@ export default async function ContactDetailPage({
         </Link>
       </div>
 
+      {contact.lastInteractionSummary && (
+        <div className="panel fade-up interaction-summary-panel" style={{ marginBottom: 14 }}>
+          <div className="section-label">Last interaction</div>
+          <div className="interaction-summary-body">{contact.lastInteractionSummary}</div>
+          <div className="interaction-summary-date">{contact.lastInteractionDate}</div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="panel fade-up">
@@ -102,11 +110,12 @@ export default async function ContactDetailPage({
             <div className="section-label">Context & background</div>
             <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.7 }}>{contact.context}</div>
           </div>
-          <div className="panel fade-up">
-            <div className="section-label">Last interaction</div>
-            <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.6, marginBottom: 8 }}>{contact.lastInteractionSummary}</div>
-            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{contact.lastInteractionDate}</div>
-          </div>
+          {!contact.lastInteractionSummary && contact.lastInteractionDate && (
+            <div className="panel fade-up">
+              <div className="section-label">Last interaction</div>
+              <div className="interaction-summary-date">{contact.lastInteractionDate}</div>
+            </div>
+          )}
           {contact.notes && (
             <div className="panel fade-up" style={{ borderColor: 'rgba(180,83,9,0.2)' }}>
               <div className="section-label">Open items & notes</div>
