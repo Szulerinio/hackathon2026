@@ -3,25 +3,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const NAV_ITEMS = [
-  { href: '/', label: 'Dashboard', icon: '⊞' },
-  { href: '/contacts', label: 'Contacts', icon: '◎' },
-  { href: '/chat', label: 'AI Chat', icon: '⌁' },
-]
+const NAV_ITEMS: { href: string; label: string; icon: string }[] = []
 
 const SIDEBAR_ITEMS = [
   { section: 'Overview', items: [
-    { href: '/', label: 'Dashboard', icon: '▤' },
-    { href: '/contacts', label: 'All contacts', icon: '⊙', badge: null },
-    { href: '/alerts', label: 'Alerts', icon: '◈', badge: '7', badgeType: 'red' },
+    { href: '/', label: 'Dashboard', icon: '▤', badge: null, badgeType: null },
+    { href: '/contacts', label: 'All contacts', icon: '⊙', badge: null, badgeType: null },
+    { href: '/alerts', label: 'Alerts', icon: '◈', badge: '5', badgeType: 'red' },
   ]},
   { section: 'Business', items: [
-    { href: '/deals', label: 'Active deals', icon: '◫', badge: null },
-    { href: '/promises', label: 'Promises', icon: '◻', badge: '9', badgeType: 'amber' },
-  ]},
-  { section: 'Network', items: [
-    { href: '/referrals', label: 'Referral sources', icon: '◈', badge: null },
-    { href: '/partners', label: 'Partners', icon: '◫', badge: null },
+    { href: '/listings', label: 'Listings', icon: '⊟', badge: null, badgeType: null },
+    { href: '/deals', label: 'Deals', icon: '◫', badge: null, badgeType: null },
   ]},
 ]
 
@@ -80,11 +72,6 @@ export default function Nav() {
             ))}
           </div>
         ))}
-        <div className="sidebar-bottom">
-          <Link href="/chat" className="ai-chat-btn">
-            ✦ Ask AI anything
-          </Link>
-        </div>
       </aside>
     </>
   )

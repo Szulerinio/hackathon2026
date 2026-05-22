@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { CONTACT_TYPES } from './mock-data'
 
 export interface Contact {
   id: string
@@ -15,6 +16,7 @@ export interface Contact {
   daysSince: number
   decayScore: number
   decayTier: 'urgent' | 'warning' | 'watch' | 'ok'
+  type: 'seller' | 'buyer' | 'both' | null
 }
 
 const THRESHOLDS: Record<string, number> = {
@@ -121,6 +123,7 @@ export function getContacts(): Contact[] {
       daysSince: decay.days,
       decayScore: decay.score,
       decayTier: decay.tier,
+      type: CONTACT_TYPES[row.name] ?? null,
     }
   })
   return _cache

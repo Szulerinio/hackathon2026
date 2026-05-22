@@ -11,6 +11,8 @@ const FILTERS = [
   { key: 'key partner', label: 'Partners' },
   { key: 'close friend', label: 'Friends' },
   { key: 'past client', label: 'Past' },
+  { key: 'seller', label: 'Sellers' },
+  { key: 'buyer', label: 'Buyers' },
 ]
 
 const AV_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5']
@@ -35,18 +37,38 @@ function tierPill(tier: Contact['decayTier']) {
   return 's-green'
 }
 
-export default function ContactsList({ contacts }: { contacts: Contact[] }) {
+function typeBadgeStyle(type: Contact['type']): React.CSSProperties {
+  if (type === 'seller') return { background: 'var(--amber-bg)', color: 'var(--amber)' }
+  if (type === 'buyer') return { background: 'var(--blue-bg)', color: 'var(--blue)' }
+  return { background: 'var(--green-bg)', color: 'var(--green)' }
+}
+
+function matchesFilter(c: Contact, activeFilter: string): boolean {
+  if (activeFilter === 'all') return true
+  if (activeFilter === 'seller') return c.type === 'seller' || c.type === 'both'
+  if (activeFilter === 'buyer') return c.type === 'buyer' || c.type === 'both'
+  return c.tags.some(t => t.toLowerCase() === activeFilter)
+}
+
+export default function ContactsList({
+  contacts,
+  showAll = false,
+}: {
+  contacts: Contact[]
+  showAll?: boolean
+}) {
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
 
   const filtered = contacts
     .filter(c => {
-      const matchFilter = activeFilter === 'all' || c.tags.some(t => t.toLowerCase() === activeFilter)
       const q = query.toLowerCase()
       const matchQuery = !q || c.name.toLowerCase().includes(q) || c.relationship.toLowerCase().includes(q) || c.notes.toLowerCase().includes(q)
-      return matchFilter && matchQuery
+      return matchesFilter(c, activeFilter) && matchQuery
     })
     .sort((a, b) => b.decayScore - a.decayScore)
+
+  const displayed = showAll ? filtered : filtered.slice(0, 14)
 
   return (
     <>
@@ -75,11 +97,25 @@ export default function ContactsList({ contacts }: { contacts: Contact[] }) {
       </div>
 
       <div className="contact-list">
-        {filtered.slice(0, 14).map(c => (
+        {displayed.map(c => (
           <Link key={c.id} href={`/contacts/${c.id}`} className="crow">
             <div className={`av ${avatarClass(c.id)}`}>{c.initials}</div>
             <div className="cinfo">
-              <div className="cname">{c.name}</div>
+              <div className="cname" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                {c.name}
+                {c.type && (
+                  <span style={{
+                    ...typeBadgeStyle(c.type),
+                    fontSize: 9,
+                    fontWeight: 700,
+                    padding: '1px 5px',
+                    borderRadius: 6,
+                    letterSpacing: '0.04em',
+                  }}>
+                    {c.type}
+                  </span>
+                )}
+              </div>
               <div className="crole">{c.relationship.split(',')[0]}</div>
             </div>
             <span className={`s-pill ${tierPill(c.decayTier)}`}>
@@ -96,7 +132,7 @@ export default function ContactsList({ contacts }: { contacts: Contact[] }) {
             </div>
           </Link>
         ))}
-        {filtered.length > 14 && (
+        {!showAll && filtered.length > 14 && (
           <div style={{ padding: '8px 6px', fontSize: '11px', color: 'var(--text3)' }}>
             +{filtered.length - 14} more — <Link href="/contacts" style={{ color: 'var(--accent-dim)', textDecoration: 'none' }}>view all</Link>
           </div>
