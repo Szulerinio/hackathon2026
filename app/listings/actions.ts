@@ -42,6 +42,7 @@ function parseListingInput(
     ok: true,
     input: {
       address,
+      description: String(formData.get("description") ?? ""),
       price: String(formData.get("price") ?? ""),
       ownerSlug,
       status,

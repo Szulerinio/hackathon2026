@@ -1,5 +1,6 @@
 export type ListingFormValues = {
   address: string
+  description: string
   price: string
   ownerSlug: string
   status: string
@@ -41,6 +42,20 @@ export default function ListingFormFields({
           placeholder="ul. Example 1/2, Kraków"
           defaultValue={values.address ?? ''}
           autoFocus={autoFocusAddress}
+        />
+      </div>
+
+      <div className="form-row">
+        <label className="form-label" htmlFor={p('description')}>
+          Description
+        </label>
+        <textarea
+          id={p('description')}
+          name="description"
+          className="form-input form-textarea"
+          rows={3}
+          placeholder="e.g. 3-bedroom apartment, south-facing balcony, recently renovated kitchen."
+          defaultValue={values.description ?? ''}
         />
       </div>
 

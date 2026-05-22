@@ -70,6 +70,7 @@ export type Contact = {
 export type ListingCard = {
   id: number;
   address: string;
+  description: string;
   price: string;
   sellerName: string;
   sellerSlug: string;
@@ -296,6 +297,7 @@ export const getListings = cache(async (): Promise<ListingCard[]> => {
     .map((row) => ({
       id: row.id,
       address: row.address ?? row.title,
+      description: row.description ?? "",
       price: row.valueDisplay ?? "",
       sellerName: row.owner.name,
       sellerSlug: row.owner.slug,

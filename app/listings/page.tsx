@@ -104,6 +104,21 @@ export default async function ListingsPage({
                 {l.price}
               </div>
 
+              {l.description ? (
+                <p style={{
+                  fontSize: 12,
+                  color: 'var(--text2)',
+                  lineHeight: 1.55,
+                  margin: 0,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}>
+                  {l.description}
+                </p>
+              ) : null}
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ fontSize: 11, color: 'var(--text3)' }}>
                   Seller:{' '}

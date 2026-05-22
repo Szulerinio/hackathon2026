@@ -14,6 +14,7 @@ const initialState: UpdateListingResult | null = null
 function toFormValues(listing: ListingCard): ListingFormValues {
   return {
     address: listing.address,
+    description: listing.description,
     price: listing.price,
     ownerSlug: listing.sellerSlug,
     status: listing.status,

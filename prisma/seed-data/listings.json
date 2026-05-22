@@ -4,48 +4,55 @@
     "price": "850 000 PLN",
     "sellerName": "Beata Mazur",
     "status": "active",
-    "daysOnMarket": 45
+    "daysOnMarket": 45,
+    "description": "Przestronne 4-pokojowe mieszkanie (92 m²) w kamienicy z 1928 r., odrestaurowane w 2019. Wysokie sufity (3,2 m), parkiet dębowy, kuchnia z wyspą i oknami na południe. Balkon od strony dziedzińca, piwnica 8 m². Cicha ulica, 8 min pieszo do Rynku Głównego."
   },
   {
     "address": "ul. Lipowa 33/2, Kraków",
     "price": "560 000 PLN",
     "sellerName": "Agnieszka Lis",
     "status": "active",
-    "daysOnMarket": 23
+    "daysOnMarket": 23,
+    "description": "Jasne 3-pokojowe (68 m²) na II piętrze w bloku z 2005 r. Salon z aneksem kuchennym, sypialnia z garderobą, pokój gościnny. Miejsce postojowe w garażu podziemnym w cenie. Osiedle zamknięte, plac zabaw, tramwaj 200 m."
   },
   {
     "address": "ul. Długa 7/3, Kraków",
     "price": "620 000 PLN",
     "sellerName": "Karolina Wiśniewska",
     "status": "active",
-    "daysOnMarket": 12
+    "daysOnMarket": 12,
+    "description": "Nowoczesne 3-pokojowe (74 m²) po generalnym remoncie 2024 — nowa instalacja, ogrzewanie podłogowe, klimatyzacja w salonie. Widok na Planty, winda w budynku. Idealne pod wynajem krótkoterminowy lub rodzinę z dzieckiem."
   },
   {
     "address": "ul. Kazimierza Wielkiego 5, Kraków",
     "price": "1 200 000 PLN",
     "sellerName": "Janusz Wiśniewski",
     "status": "active",
-    "daysOnMarket": 8
+    "daysOnMarket": 8,
+    "description": "Luksusowy penthouse 5-pokojowy (145 m²) z tarasem 40 m² i panoramą na Wawel. Dwie łazienki, salon 45 m², smart home, garaż podziemny. Apartamentowiec z 2021 r., recepcja 24/7, siłownia w budynku."
   },
   {
     "address": "ul. Bronowicka 44/1, Kraków",
     "price": "430 000 PLN",
     "sellerName": "Marta Jabłońska",
     "status": "sold",
-    "daysOnMarket": 91
+    "daysOnMarket": 91,
+    "description": "Kompaktowe 2-pokojowe (48 m²) na parterze z ogródkiem 25 m². Blok z wielkiej płyty, po remoncie kuchni i łazienki. Blisko pętli tramwajowej Bronowice, dobra komunikacja z centrum i lotniskiem."
   },
   {
     "address": "ul. Podchorążych 3, Kraków",
     "price": "780 000 PLN",
     "sellerName": "Henryk Dąbrowski",
     "status": "withdrawn",
-    "daysOnMarket": 67
+    "daysOnMarket": 67,
+    "description": "Rodzinne 4-pokojowe (88 m²) w zabytkowej willi przerobionej na kamienicę. Dwa poziomy, kominek w salonie, oryginalne detale secesyjne. Właściciel wycofał ofertę — planuje wynajem długoterminowy po wakacjach."
   },
   {
     "address": "ul. Starowiślna 22/8, Kraków",
     "price": "495 000 PLN",
     "sellerName": "Tomasz Wierzbicki",
     "status": "active",
-    "daysOnMarket": 31
+    "daysOnMarket": 31,
+    "description": "Kawalerka premium (38 m²) w loftowym budynku po adaptacji fabryki. Antresola na sypialnię, industrialne okna, wysokość 4,5 m. Kazimierz — restauracje i kultura pod domem. Niskie czynsz administracyjny."
   }
 ]

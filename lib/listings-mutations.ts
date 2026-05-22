@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 
 export type CreateListingInput = {
   address: string;
+  description?: string;
   price?: string;
   ownerSlug: string;
   status: string;
@@ -36,6 +37,7 @@ export async function createListing(
     data: {
       title: address,
       address,
+      description: emptyToNull(input.description),
       ownerId: owner.id,
       valueDisplay: emptyToNull(price),
       valuePln: price ? parseValuePln(price) : null,
@@ -81,6 +83,7 @@ export async function updateListing(
     data: {
       title: address,
       address,
+      description: emptyToNull(input.description),
       ownerId: owner.id,
       valueDisplay: emptyToNull(price),
       valuePln: price ? parseValuePln(price) : null,

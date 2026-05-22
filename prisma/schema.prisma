@@ -58,6 +58,7 @@ model Listing {
   id           Int      @id @default(autoincrement())
   title        String
   subtitle     String?
+  description  String?
   address      String?
   ownerId      Int
   owner        Contact  @relation("ListingOwner", fields: [ownerId], references: [id], onDelete: Cascade)

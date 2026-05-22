@@ -27,6 +27,7 @@ type SeedListing = {
   sellerName: string;
   status: string;
   daysOnMarket: number;
+  description?: string;
 };
 
 type SeedDeal = {
@@ -178,6 +179,7 @@ async function main() {
       data: {
         title: listing.address,
         address: listing.address,
+        description: listing.description ?? null,
         ownerId,
         valueDisplay: listing.price,
         valuePln: parseValuePln(listing.price),

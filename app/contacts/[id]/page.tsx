@@ -150,8 +150,11 @@ export default async function ContactDetailPage({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {linkedListings.map(l => (
                     <div key={l.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--surface2)', borderRadius: 'var(--r-sm)' }}>
-                      <div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{l.address}</div>
+                        {l.description ? (
+                          <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2, lineHeight: 1.45 }}>{l.description}</div>
+                        ) : null}
                         <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{l.price} · {l.daysOnMarket}d on market</div>
                       </div>
                       <span className={`s-pill ${listingStatusPill(l.status)}`}>{l.status}</span>
