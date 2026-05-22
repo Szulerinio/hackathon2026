@@ -8,6 +8,10 @@ export {
 } from "./extract-alerts-from-text";
 export { runClaudeToolLoop, type ToolLoopRequest } from "./claude-tool-loop";
 export {
+  CREATE_ALERT_INPUT_SCHEMA,
+  SUGGESTED_ACTIONS,
+} from "./tools/create-alert-schema";
+export {
   createAlertTool,
   parseCreateAlertToolInput,
   type CreateAlertToolInput,

@@ -42,9 +42,9 @@ Rules:
 - Only create alerts you can tie to a contact in the directory (use exact contactSlug).
 - reason: 1–3 sentences with specific facts from the text (deadlines, amounts, unanswered requests).
 - severity: urgent (today), warning (this week), watch (monitor), ok (soft reminder).
-- dueDate: YYYY-MM-DD when Rafał should act — set whenever a deadline, appointment, or "by [date]" appears in the text.
-- suggestedAction: short UI label — "Call", "Follow up", "Prepare", etc.
-- daysSince: include when the text implies how long something has been waiting.
+- create_alert requires: contactSlug, reason, severity, dueDate (YYYY-MM-DD), suggestedAction (enum: Call | Follow up | Prepare | Send documents | Review), daysSince (number or null).
+- dueDate: always set — use an explicit deadline from text, or CRM today when urgency is immediate.
+- daysSince: integer days waiting, or null if unknown.
 - Do not duplicate the same issue; prefer 1–5 high-quality alerts over many vague ones.
 - If nothing is actionable, do not call create_alert; reply briefly that no alerts were needed.
 

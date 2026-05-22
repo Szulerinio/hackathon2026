@@ -6,10 +6,10 @@ const SEVERITIES: DecayTier[] = ["urgent", "warning", "watch", "ok"];
 export type CreateAlertInput = {
   contactSlug: string;
   reason: string;
-  suggestedAction?: string;
+  suggestedAction: string;
   severity: DecayTier;
   /** YYYY-MM-DD — when the action should happen */
-  dueDate?: string;
+  dueDate: string;
   daysSince?: number;
 };
 
@@ -57,9 +57,9 @@ export async function createAlert(
     data: {
       contactId: contact.id,
       reason,
-      suggestedAction: emptyToNull(input.suggestedAction),
+      suggestedAction: input.suggestedAction.trim(),
       severity: input.severity,
-      dueDate: parseDueDate(input.dueDate),
+      dueDate: parseDueDate(input.dueDate) ?? input.dueDate.trim(),
       daysSince:
         input.daysSince !== undefined && Number.isFinite(input.daysSince)
           ? Math.max(0, Math.round(input.daysSince))

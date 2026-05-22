@@ -2,11 +2,13 @@
 export type AnthropicToolDefinition = {
   name: string;
   description: string;
+  /** When true, model output must match input_schema exactly. */
+  strict?: boolean;
   input_schema: {
     type: "object";
     properties: Record<string, unknown>;
-    required?: string[];
-    additionalProperties?: boolean;
+    required: string[];
+    additionalProperties: false;
   };
 };
 
