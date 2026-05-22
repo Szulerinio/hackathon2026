@@ -51,22 +51,62 @@ export default async function AlertsPage() {
                   {alert.reason}
                 </div>
               </div>
-              <button
-                style={{
-                  flexShrink: 0,
-                  padding: '5px 12px',
-                  background: 'var(--surface2)',
-                  border: '1px solid var(--border2)',
-                  borderRadius: 'var(--r-sm)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {alert.actionLabel}
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                {alert.contactEmail && (
+                  <a
+                    href={`mailto:${alert.contactEmail}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+
+                      padding: '5px 12px',
+                      background: '#fff',
+                      border: '1px solid var(--border2)',
+                      borderRadius: 'var(--r-sm)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: 'var(--text)',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Email
+                  </a>
+                )}
+                {alert.contactPhone && (
+                  <a
+                    href={`tel:${alert.contactPhone}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+
+                      padding: '5px 12px',
+                      background: '#fff',
+                      border: '1px solid var(--border2)',
+                      borderRadius: 'var(--r-sm)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: 'var(--text)',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Call
+                  </a>
+                )}
+                {!alert.contactEmail && !alert.contactPhone && (
+                  <span
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: 12,
+                      color: 'var(--text3)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    No contact info
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>

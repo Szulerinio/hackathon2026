@@ -94,6 +94,8 @@ export type AlertFeedItem = {
   id: number;
   contactName: string;
   contactSlug: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
   reason: string;
   actionLabel: string;
   dueDate: string;
@@ -464,6 +466,8 @@ export const getAlertFeed = cache(async (): Promise<AlertFeedItem[]> => {
     id: row.id,
     contactName: row.contact.name,
     contactSlug: row.contact.slug,
+    contactEmail: row.contact.email ?? null,
+    contactPhone: row.contact.phone ?? null,
     reason: row.reason,
     actionLabel: row.suggestedAction ?? "Follow up",
     dueDate: formatDate(row.dueDate),
