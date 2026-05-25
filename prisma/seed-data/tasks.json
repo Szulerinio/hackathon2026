@@ -1,0 +1,37 @@
+[
+  {
+    "contactName": "Paweł Adamczyk",
+    "reason": "Podgórze apartment tour — Limanowskiego plus two backup listings near the fort.",
+    "actionLabel": "Bring floor plans; confirm Credit Agricole bridge with Piotr before showing.",
+    "dueDate": "2026-05-23",
+    "createdAt": "2026-05-22"
+  },
+  {
+    "contactName": "Szymon Kaczmarek",
+    "reason": "Center apartment walk-through — two 2-bedrooms for Airbnb (Kazimierz + Old Town).",
+    "actionLabel": "Short-term yield sheet; keys from listing agents.",
+    "dueDate": "2026-05-21",
+    "createdAt": "2026-05-20"
+  },
+  {
+    "contactName": "Natalia Kwiatkowska",
+    "reason": "Wieliczka house showing — garden check for the golden retriever, commute time to Technology Park.",
+    "actionLabel": "Print last valuation; Olek joins after 3pm.",
+    "dueDate": "2026-05-22",
+    "createdAt": "2026-05-21"
+  },
+  {
+    "contactName": "Anna Krajewska",
+    "reason": "Piłsudskiego luxury showing — CEO preview of the 200 m² apartment before shortlist goes out.",
+    "actionLabel": "Staging photos from Robert; no sales pitch, Anna leads.",
+    "dueDate": "2026-05-24",
+    "createdAt": "2026-05-22"
+  },
+  {
+    "contactName": "Marek Kowalski",
+    "reason": "University district loop — three rental apartments (Dębniki, Krowodrza, Zwierzyniec).",
+    "actionLabel": "Rental yield comparison sheet from Dorota; Bożena may join.",
+    "dueDate": "2026-05-25",
+    "createdAt": "2026-05-22"
+  }
+]

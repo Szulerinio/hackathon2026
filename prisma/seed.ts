@@ -91,6 +91,7 @@ async function main() {
   const LISTINGS = loadJson<SeedListing[]>("listings.json");
   const DEALS = loadJson<SeedDeal[]>("deals.json");
   const ALERTS = loadJson<SeedAlert[]>("alerts.json");
+  const TASKS = loadJson<SeedAlert[]>("tasks.json");
   const { referralLinks, lifeEvents } = loadJson<SeedMeta>("meta.json");
 
   await prisma.alert.deleteMany();
@@ -289,6 +290,25 @@ async function main() {
         dueDate: alert.dueDate ?? null,
         severity: "warning",
         generatedAt: new Date(`${alert.createdAt}T12:00:00`),
+      },
+    });
+  }
+
+  for (const task of TASKS) {
+    const contactId = idByName.get(task.contactName);
+    if (!contactId) {
+      console.warn(`Skipping task — contact not found: ${task.contactName}`);
+      continue;
+    }
+    await prisma.alert.create({
+      data: {
+        contactId,
+        reason: task.reason,
+        suggestedAction: task.actionLabel,
+        dueDate: task.dueDate ?? null,
+        severity: "watch",
+        source: "manual",
+        generatedAt: new Date(`${task.createdAt}T12:00:00`),
       },
     });
   }
